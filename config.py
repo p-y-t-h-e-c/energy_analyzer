@@ -2,7 +2,7 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class ProjectConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", env_prefix="", case_sensitive=False
     )
@@ -14,15 +14,20 @@ class Settings(BaseSettings):
     api_key: SecretStr = Field(default=None, alias="API_KEY")
 
     # Electricity Info
+    electricity_tariff: str = "/electricity-tariffs/"
     e_tariff_code: str = "E-1R-SILVER-FLEX-22-11-25-B"
     e_MPAN: SecretStr = Field(default=None, alias="electricity_MPAN")
     e_serial_no: SecretStr = Field(default=None, alias="electricity_serial_no")
 
     # Gas Info
+    gas_tariff: str = "/gas-tariffs/"
     g_tariff_code: str = "G-1R-SILVER-FLEX-22-11-25-B"
     g_MPRN: SecretStr = Field(default=None, alias="gas_MPRN")
     g_serial_no: SecretStr = Field(default=None, alias="gas_serial_no")
 
+    # Database
+    db_url: SecretStr = Field(default=None, alias="DATABASE_URL")
+
 
 if __name__ == "__main__":
-    print(Settings().model_dump())
+    print(ProjectConfig().model_dump())

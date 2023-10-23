@@ -1,65 +1,37 @@
 from datetime import datetime
+from typing import Any, List
 
 import pandas as pd
 import requests
 
-from settings import Settings
+from config import ProjectConfig
+from database.db_connector import DbConnector
 
-CONF = Settings()
+CONFIG = ProjectConfig()
+DB_CONNECTOR = DbConnector(CONFIG.db_url.get_secret_value())
 
 
 url = "https://api.octopus.energy/v1/products"
-r = requests.get(url, auth=(CONF.api_key.get_secret_value(), ""))
-output_dict = r.json()
-# print(output_dict)
-
-url = "https://api.octopus.energy/v1/accounts/" + CONF.account.get_secret_value()
-r = requests.get(url, auth=(CONF.api_key.get_secret_value(), ""))
+r = requests.get(url, auth=(CONFIG.api_key.get_secret_value(), ""))
 output_dict = r.json()
 # print(output_dict)
 
 
-def get_electricity_standard_unit_rates() -> pd.DataFrame:
-    #   link = /v1/products/{product_code}/electricity-tariffs/{tariff_code}/standard-unit-rates/  # Noqa: E501
-    url = (
-        CONF.api_url
-        + "/products/"
-        + CONF.product_code
-        + "/electricity-tariffs/"
-        + CONF.e_tariff_code
-        + "/standard-unit-rates/"
-    )
-    response = requests.get(url)
-    print(response)
-    output_dict = response.json()
+def get_account_info():
+    url = "https://api.octopus.energy/v1/accounts/" + CONFIG.account.get_secret_value()
+    r = requests.get(url, auth=(CONFIG.api_key.get_secret_value(), ""))
+    output_dict = r.json()
     # print(output_dict)
-
-    valid_from = [
-        datetime.fromisoformat(x["valid_from"]).strftime("%Y-%m-%d")
-        for x in output_dict["results"]
-    ]
-    unit_rate_exc_vat = [x["value_exc_vat"] for x in output_dict["results"]]
-    unit_rate_inc_vat = [x["value_inc_vat"] for x in output_dict["results"]]
-    unit_rates = pd.DataFrame(
-        {
-            "date": valid_from,
-            "unit_rate_exc_vat": unit_rate_exc_vat,
-            "unit_rate_inc_vat": unit_rate_inc_vat,
-        }
-    )
-
-    print(unit_rates)
-    return unit_rates
 
 
 def get_gas_standard_unit_rates() -> pd.DataFrame:
     # link = https://api.octopus.energy/v1/products/{product_code}/gas-tariffs/{tariff_code}/standard-unit-rates/  # Noqa: E501
     url = (
-        CONF.api_url
+        CONFIG.api_url
         + "/products/"
-        + CONF.product_code
+        + CONFIG.product_code
         + "/gas-tariffs/"
-        + CONF.g_tariff_code
+        + CONFIG.g_tariff_code
         + "/standard-unit-rates/"
     )
     response = requests.get(url)
@@ -67,15 +39,15 @@ def get_gas_standard_unit_rates() -> pd.DataFrame:
     output_dict = response.json()
     # print(output_dict)
 
-    valid_from = [
-        datetime.fromisoformat(x["valid_from"]).strftime("%Y-%m-%d")
+    valid_to = [
+        datetime.fromisoformat(x["valid_to"]).strftime("%Y-%m-%d")
         for x in output_dict["results"]
     ]
     unit_rate_exc_vat = [x["value_exc_vat"] for x in output_dict["results"]]
     unit_rate_inc_vat = [x["value_inc_vat"] for x in output_dict["results"]]
     unit_rates = pd.DataFrame(
         {
-            "date": valid_from,
+            "date": valid_to,
             "unit_rate_exc_vat": unit_rate_exc_vat,
             "unit_rate_inc_vat": unit_rate_inc_vat,
         }
@@ -89,15 +61,15 @@ def get_electricity_consumption():
     # https://api.octopus.energy/electricity-meter-points/{mpan}/meters/{serial_number}/consumption/
     # https://api.octopus.energy/gas-meter-points/{mprn}/meters/{serial_number}/consumption/
     url = (
-        CONF.api_url
+        CONFIG.api_url
         + "/electricity-meter-points/"
-        + CONF.e_MPAN.get_secret_value()
+        + CONFIG.e_MPAN.get_secret_value()
         + "/meters/"
-        + CONF.e_serial_no.get_secret_value()
+        + CONFIG.e_serial_no.get_secret_value()
         + "/consumption/"
     )
-    response = requests.get(url, auth=(CONF.api_key.get_secret_value(), ""))
-    print(response)
+    response = requests.get(url, auth=(CONFIG.api_key.get_secret_value(), ""))
+
     output_dict = response.json()
 
     interval_start = [
@@ -122,6 +94,35 @@ def get_electricity_consumption():
 
 
 if __name__ == "__main__":
-    get_electricity_standard_unit_rates()
-    get_gas_standard_unit_rates()
-    get_electricity_consumption()
+    from database.db_connector import DbConnector
+    from database.db_models import Base, ElectricityRatesTable, GasRatesTable
+    from octopus_data_extract.data_extract import get_standard_unit_rates
+
+    db_connector = DbConnector(CONFIG.db_url.get_secret_value())
+    Base.metadata.drop_all(db_connector._engine)
+    Base.metadata.create_all(db_connector._engine)
+
+    electricity_unit_rates = get_standard_unit_rates(
+        api_url=CONFIG.api_url,
+        product_code=CONFIG.product_code,
+        tariff_type=CONFIG.electricity_tariff,
+        tariff_code=CONFIG.e_tariff_code,
+    )
+    for unit_rate in electricity_unit_rates:
+        db_connector.add_unit_rates(
+            ref_table=ElectricityRatesTable.db_table(), unit_rate=unit_rate
+        )
+
+    gas_unit_rates = get_standard_unit_rates(
+        api_url=CONFIG.api_url,
+        product_code=CONFIG.product_code,
+        tariff_type=CONFIG.gas_tariff,
+        tariff_code=CONFIG.g_tariff_code,
+    )
+    for unit_rate in gas_unit_rates:
+        db_connector.add_unit_rates(
+            ref_table=GasRatesTable.db_table(), unit_rate=unit_rate
+        )
+    # get_gas_standard_unit_rates()
+    # get_electricity_consumption()
+    # get_electricity_standard_unit_rates()
