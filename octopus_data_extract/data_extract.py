@@ -3,20 +3,16 @@ from typing import Any, List
 
 import requests
 
+from config import get_consumption_url, get_rates_url
 
-def get_standard_unit_rates(
-    api_url, product_code, tariff_type, tariff_code
-) -> List[dict[str, Any]]:
-    #   link = /v1/products/{product_code}/electricity-tariffs/{tariff_code}/standard-unit-rates/  # Noqa: E501
-    url = (
-        api_url
-        + "/products/"
-        + product_code
-        + tariff_type
-        + tariff_code
-        + "/standard-unit-rates/"
-        + "?period_from=2022-07-20T00:00Z"
-    )
+
+def get_standard_unit_rates(url: str) -> List[dict[str, Any]]:
+    """Export standard unit rates, either electricity or gas.
+
+    :param url: url for the API request
+
+    :return: A list of dictionaries
+    """
     response = requests.get(url)
     output_dict = response.json()
     # print(output_dict["results"])
@@ -32,12 +28,36 @@ def get_standard_unit_rates(
     return unit_rates
 
 
-if __name__ == "__main__":
-    from main import CONFIG
+def get_consumption_values(url: str, api_key: str) -> List[dict[str, Any]]:
+    """Export half hourly consumption values either electricity or gas.
 
-    get_standard_unit_rates(
-        api_url=CONFIG.api_url,
-        product_code=CONFIG.product_code,
-        tariff_type=CONFIG.electricity_tariff,
-        tariff_code=CONFIG.e_tariff_code,
-    )
+    :param url: url for the API request
+    :param api_key: API Key required of the request
+
+    :return: A list of dictionaries
+    """
+    response = requests.get(url, auth=(api_key, ""))
+    output_dict = response.json()
+    # print(output_dict)
+    consumption_values = []
+    for result in output_dict["results"]:
+        consumption_unit = {
+            "date": datetime.fromisoformat(result["interval_start"]).strftime(
+                "%Y-%m-%d"
+            ),
+            "consumption": result["consumption"],
+        }
+        consumption_values.append(consumption_unit)
+    # print(consumption_values)
+    return consumption_values
+
+
+if __name__ == "__main__":
+    from config import ProjectConfig
+    from data_models import EnergyType
+
+    url = get_rates_url(EnergyType.ELECTRICITY)
+    get_standard_unit_rates(url)
+
+    url = get_consumption_url(EnergyType.ELECTRICITY)
+    get_consumption_values(url, ProjectConfig().api_key.get_secret_value())

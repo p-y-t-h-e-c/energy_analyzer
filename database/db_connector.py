@@ -27,5 +27,17 @@ class DbConnector:
             except IntegrityError:
                 print("Record already in already exists in the database.")
 
+    def add_consumption_values(
+        self, ref_table: Table, consumption_unit: dict[str, Any]
+    ):
+        with Session(self._engine) as session:
+            rates_table = ref_table
+            rates_dict = consumption_unit
 
-# notifications / database / develop_notifications_backend.db
+            insert = rates_table.insert().values(**rates_dict)
+
+            try:
+                session.execute(insert)
+                session.commit()
+            except IntegrityError:
+                print("Record already in already exists in the database.")
