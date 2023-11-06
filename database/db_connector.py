@@ -14,27 +14,14 @@ class DbConnector:
             echo=echo,
         )
 
-    def add_unit_rates(self, ref_table: Table, unit_rate: dict[str, Any]):
+    def add_data_to_db(self, ref_table: Table, data: dict[str, Any]) -> None:
+        """Add data to database.
+
+        :param ref_table: db table reference
+        :param data: a row of data in dict format to be added te a table
+        """
         with Session(self._engine) as session:
-            rates_table = ref_table
-            rates_dict = unit_rate
-
-            insert = rates_table.insert().values(**rates_dict)
-
-            try:
-                session.execute(insert)
-                session.commit()
-            except IntegrityError:
-                print("Record already in already exists in the database.")
-
-    def add_consumption_values(
-        self, ref_table: Table, consumption_unit: dict[str, Any]
-    ):
-        with Session(self._engine) as session:
-            rates_table = ref_table
-            rates_dict = consumption_unit
-
-            insert = rates_table.insert().values(**rates_dict)
+            insert = ref_table.insert().values(**data)
 
             try:
                 session.execute(insert)
