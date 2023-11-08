@@ -241,4 +241,3 @@ local-postgres: local-postgres-rm
 # Create the open api schema doc and place it in the docs directory.
 open-api-schema:
     poetry run python scripts/add_open_api_schema_to_docs.py
-
