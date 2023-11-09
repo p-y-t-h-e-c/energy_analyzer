@@ -1,3 +1,4 @@
+"""Data processing module."""
 from config import ProjectConfig, get_consumption_url, get_rates_url
 from data_models import EnergyType
 from database.db_connector import DbConnector
@@ -13,6 +14,7 @@ from octopus_data.data_extract import get_consumption_values, get_standard_unit_
 def process_data(
     energy_type: EnergyType, config: ProjectConfig, db_connector: DbConnector
 ):
+    """Process electricity and gas data from Octopus into Neon database."""
     match energy_type:
         case EnergyType.ELECTRICITY:
             electricity_unit_rates = get_standard_unit_rates(get_rates_url(energy_type))

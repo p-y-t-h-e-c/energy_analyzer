@@ -1,3 +1,4 @@
+"""Config module."""
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -39,6 +40,12 @@ class ProjectConfig(BaseSettings):
 
 
 def get_rates_url(energy_type: EnergyType) -> str:
+    """Create either electricity or gas rates url.
+
+    :param energy_type: either electricity or gas energy type
+
+    :return: rates url link
+    """
     config = ProjectConfig()
     match energy_type:
         case EnergyType.ELECTRICITY:
@@ -62,6 +69,12 @@ def get_rates_url(energy_type: EnergyType) -> str:
 
 
 def get_consumption_url(energy_type: EnergyType) -> str:
+    """Create either electricity or gas consumption url.
+
+    :param energy_type: either electricity or gas energy type
+
+    :return: consumption url link
+    """
     config = ProjectConfig()
     match energy_type:
         case EnergyType.ELECTRICITY:

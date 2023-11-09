@@ -1,3 +1,4 @@
+"""Main module."""
 import requests
 
 from config import ProjectConfig
@@ -16,6 +17,7 @@ output_dict = r.json()
 
 
 def get_account_info():
+    """Get Octopus account info."""
     url = "https://api.octopus.energy/v1/accounts/" + CONFIG.account.get_secret_value()
     r = requests.get(url, auth=(CONFIG.octopus_api_key.get_secret_value(), ""))
     output_dict = r.json()
@@ -23,6 +25,7 @@ def get_account_info():
 
 
 def process_octopus_data():
+    """Process Octopus data."""
     for energy_type in EnergyType:
         process_data(energy_type=energy_type, config=CONFIG, db_connector=DB_CONNECTOR)
 

@@ -1,3 +1,4 @@
+"""Database connector module."""
 from typing import Any
 
 from sqlalchemy import Table, create_engine
@@ -9,6 +10,7 @@ class DbConnector:
     """Database connector."""
 
     def __init__(self, database_url: str, echo: bool = False):
+        """Class constructor method."""
         self._engine = create_engine(
             database_url,
             echo=echo,

@@ -1,3 +1,4 @@
+"""Data extractor module."""
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -8,7 +9,10 @@ from data_models import ElectricityData, EnergyType
 
 
 class _DataExtractor:
+    """Data extractor class."""
+
     def __init__(self) -> None:
+        """Class constructor."""
         self.unit_rates: List[dict[str, Any]] = []
         self.consumption_values: List[dict[str, Any]] = []
 
@@ -52,12 +56,12 @@ class _DataExtractor:
             self.consumption_values.append(consumption_unit)
 
 
-class ElectricityDataExtractor(_DataExtractor):
-    def get_electricity_data(self, url: str, api_key: str):
-        electricity_data = ElectricityData()
-        electricity_data.unit_rate = self.get_standard_unit_rates(url)
-        electricity_data.consumption = self.consumption_values
-        return electricity_data
+# class ElectricityDataExtractor(_DataExtractor):
+#     def get_electricity_data(self, url: str, api_key: str):
+#         electricity_data = ElectricityData()
+#         electricity_data.unit_rate = self.get_standard_unit_rates(url)
+#         electricity_data.consumption = self.consumption_values
+#         return electricity_data
 
 
 def get_standard_unit_rates(url: str) -> List[dict[str, Any]]:
