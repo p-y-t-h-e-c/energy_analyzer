@@ -31,5 +31,6 @@ def process_octopus_data():
 
 
 if __name__ == "__main__":
-    for energy_type in EnergyType:
-        print(energy_type)
+    # for energy_type in EnergyType:
+    #     print(energy_type)
+    process_octopus_data()
