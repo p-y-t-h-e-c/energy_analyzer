@@ -1,8 +1,12 @@
 """Config module."""
+from datetime import date, timedelta
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from data_models import EnergyType
+from database.db_connector import DbConnector
+from database.db_models import ElectricityRatesTable
 from utils import assert_never
 
 
@@ -39,6 +43,29 @@ class ProjectConfig(BaseSettings):
     db_url: SecretStr = Field(default=None, alias="DATABASE_URL")
 
 
+CONFIG = ProjectConfig()
+
+
+def period_from() -> str:
+    """Generate period_from date.
+
+    :return: period_from attribute
+    """
+    db_url = CONFIG.db_url
+    db_connector = DbConnector(db_url.get_secret_value())
+    date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=7)
+    return f"period_from={date}"
+
+
+def period_to() -> str:
+    """Generate period_to date.
+
+    :return: period_to attribute
+    """
+    period_to = date.today() + timedelta(days=1)
+    return f"period_to={period_to}"
+
+
 def get_rates_url(energy_type: EnergyType) -> str:
     """Create either electricity or gas rates url.
 
@@ -46,22 +73,21 @@ def get_rates_url(energy_type: EnergyType) -> str:
 
     :return: rates url link
     """
-    config = ProjectConfig()
     match energy_type:
         case EnergyType.ELECTRICITY:
             url = (
-                f"{config.octopus_api_url}/products/"
-                + f"{config.product_code}/electricity-tariffs/"
-                + f"{config.e_tariff_code}/standard-unit-rates/"
-                + "?period_from=2022-07-20&page_size=1000"
+                f"{CONFIG.octopus_api_url}/products/"
+                + f"{CONFIG.product_code}/electricity-tariffs/"
+                + f"{CONFIG.e_tariff_code}/standard-unit-rates/"
+                + f"?period_from=2022-07-20&{period_to()}&page_size=1000"
             )
             return url
         case EnergyType.GAS:
             url = (
-                f"{config.octopus_api_url}/products/"
-                + f"{config.product_code}/gas-tariffs/"
-                + f"{config.g_tariff_code}/standard-unit-rates/"
-                + "?period_from=2022-07-20&page_size=1000"
+                f"{CONFIG.octopus_api_url}/products/"
+                + f"{CONFIG.product_code}/gas-tariffs/"
+                + f"{CONFIG.g_tariff_code}/standard-unit-rates/"
+                + f"?period_from=2022-07-20&{period_to()}&page_size=1000"
             )
             return url
         case _:
@@ -75,21 +101,20 @@ def get_consumption_url(energy_type: EnergyType) -> str:
 
     :return: consumption url link
     """
-    config = ProjectConfig()
     match energy_type:
         case EnergyType.ELECTRICITY:
             url = (
-                f"{config.octopus_api_url}/electricity-meter-points/"
-                + f"{config.e_MPAN.get_secret_value()}/meters/"
-                + f"{config.e_serial_no.get_secret_value()}/consumption/"
+                f"{CONFIG.octopus_api_url}/electricity-meter-points/"
+                + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
+                + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
                 + "?group_by=day&period_from=2022-07-20&page_size=1000"
             )
             return url
         case EnergyType.GAS:
             url = (
-                f"{config.octopus_api_url}/gas-meter-points/"
-                + f"{config.g_MPRN.get_secret_value()}/meters/"
-                + f"{config.g_serial_no.get_secret_value()}/consumption/"
+                f"{CONFIG.octopus_api_url}/gas-meter-points/"
+                + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
+                + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
                 + "?group_by=day&period_from=2022-07-20&page_size=1000"
             )
             return url
@@ -98,4 +123,6 @@ def get_consumption_url(energy_type: EnergyType) -> str:
 
 
 if __name__ == "__main__":
-    print(ProjectConfig().model_dump())
+    # print(ProjectConfig().model_dump())
+    # print(period_to())
+    print(period_from())

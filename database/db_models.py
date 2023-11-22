@@ -1,10 +1,18 @@
+"""Database models."""
+from typing import Type, Union
+
 from sqlalchemy import Date, DateTime, Float, Table
-from sqlalchemy.orm import DeclarativeBase, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, MappedAsDataclass):
+    """Tables dafinition base class."""
+
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
+
     @classmethod
     def db_table(cls) -> Table:
+        """Create a Table object."""
         return Table(cls.__tablename__, Base.metadata)
 
 
@@ -13,9 +21,8 @@ class ElectricityRatesTable(Base):
 
     __tablename__ = "electricity_rates"
 
-    date = mapped_column(Date, primary_key=True)
-    unit_rate_exc_vat = mapped_column(Float, nullable=False)
-    unit_rate_inc_vat = mapped_column(Float, nullable=False)
+    unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
+    unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
 class GasRatesTable(Base):
@@ -23,24 +30,29 @@ class GasRatesTable(Base):
 
     __tablename__ = "gas_rates"
 
-    date = mapped_column(Date, primary_key=True)
-    unit_rate_exc_vat = mapped_column(Float, nullable=False)
-    unit_rate_inc_vat = mapped_column(Float, nullable=False)
+    unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
+    unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
 class ElectricityConsumptionTable(Base):
-    """Electricity consumption table"""
+    """Electricity consumption table."""
 
     __tablename__ = "electricity_consumption"
 
-    date = mapped_column(DateTime, primary_key=True)
-    consumption = mapped_column(Float, nullable=False)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
 class GasConsumptionTable(Base):
-    """Gas consumption table"""
+    """Gas consumption table."""
 
     __tablename__ = "gas_consumption"
 
-    date = mapped_column(DateTime, primary_key=True)
-    consumption = mapped_column(Float, nullable=False)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
+OctopusTables = Union[
+    Type[ElectricityRatesTable],
+    Type[ElectricityConsumptionTable],
+    Type[GasRatesTable],
+    Type[GasConsumptionTable],
+]
