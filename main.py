@@ -40,11 +40,11 @@ def process_octopus_electricity_data() -> None:
     )
 
     for unit_rate in electricity_data.unit_rate:
-        DB_CONNECTOR.add_data_to_db(ref_table=ElectricityRatesTable, data=unit_rate)
+        DB_CONNECTOR.upsert_db(table=ElectricityRatesTable, data=unit_rate)
 
     for consumption_unit in electricity_data.consumption:
-        DB_CONNECTOR.add_data_to_db(
-            ref_table=ElectricityConsumptionTable,
+        DB_CONNECTOR.upsert_db(
+            table=ElectricityConsumptionTable,
             data=consumption_unit,
         )
 
@@ -59,11 +59,11 @@ def process_octopus_gas_data() -> None:
     )
 
     for unit_rate in gas_data.unit_rate:
-        DB_CONNECTOR.add_data_to_db(ref_table=GasRatesTable, data=unit_rate)
+        DB_CONNECTOR.upsert_db(table=GasRatesTable, data=unit_rate)
 
     for consumption_unit in gas_data.consumption:
-        DB_CONNECTOR.add_data_to_db(
-            ref_table=GasConsumptionTable,
+        DB_CONNECTOR.upsert_db(
+            table=GasConsumptionTable,
             data=consumption_unit,
         )
 

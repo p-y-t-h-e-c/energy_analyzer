@@ -4,7 +4,6 @@ from typing import Any, List, Optional
 
 import requests
 
-from config import get_consumption_url, get_rates_url
 from data_models import ElectricityData, GasData
 
 
@@ -29,7 +28,9 @@ class _DataExtractor:
         # print(output_dict["results"])
         for result in output_dict["results"]:
             unit_rate = {
-                "date": datetime.fromisoformat(result["valid_to"]).strftime("%Y-%m-%d"),
+                "date": datetime.fromisoformat(result["valid_from"]).strftime(
+                    "%Y-%m-%d"
+                ),
                 "unit_rate_exc_vat": result["value_exc_vat"],
                 "unit_rate_inc_vat": result["value_inc_vat"],
             }
@@ -112,4 +113,16 @@ class GasDataExtractor(_DataExtractor):
 
 
 if __name__ == "__main__":
-    pass
+    from config import ProjectConfig, get_consumption_url, get_rates_url
+    from data_models import EnergyType
+
+    config = ProjectConfig()
+
+    electricity_data_extractor = ElectricityDataExtractor()
+    electricity_data = electricity_data_extractor.get_electricity_data(
+        rates_url=get_rates_url(energy_type=EnergyType.ELECTRICITY),
+        consumption_url=get_consumption_url(energy_type=EnergyType.ELECTRICITY),
+        api_key=config.octopus_api_key.get_secret_value(),
+    )
+
+    print(electricity_data.unit_rate)

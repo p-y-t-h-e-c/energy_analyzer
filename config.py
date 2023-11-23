@@ -73,13 +73,14 @@ def get_rates_url(energy_type: EnergyType) -> str:
 
     :return: rates url link
     """
+    # page_size - default is 100, maximum is 1,500 for rates
     match energy_type:
         case EnergyType.ELECTRICITY:
             url = (
                 f"{CONFIG.octopus_api_url}/products/"
                 + f"{CONFIG.product_code}/electricity-tariffs/"
                 + f"{CONFIG.e_tariff_code}/standard-unit-rates/"
-                + f"?period_from=2022-07-20&{period_to()}&page_size=1000"
+                + f"?{period_from()}&{period_to()}&page_size=1500"  #
             )
             return url
         case EnergyType.GAS:
@@ -87,7 +88,7 @@ def get_rates_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/products/"
                 + f"{CONFIG.product_code}/gas-tariffs/"
                 + f"{CONFIG.g_tariff_code}/standard-unit-rates/"
-                + f"?period_from=2022-07-20&{period_to()}&page_size=1000"
+                + f"?{period_from()}&{period_to()}&page_size=1500"
             )
             return url
         case _:
@@ -101,13 +102,14 @@ def get_consumption_url(energy_type: EnergyType) -> str:
 
     :return: consumption url link
     """
+    # page_size - default is 100, maximum is 25,000 for consumption
     match energy_type:
         case EnergyType.ELECTRICITY:
             url = (
                 f"{CONFIG.octopus_api_url}/electricity-meter-points/"
                 + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
                 + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
-                + "?group_by=day&period_from=2022-07-20&page_size=1000"
+                + f"?group_by=day&{period_from()}&page_size=25000"
             )
             return url
         case EnergyType.GAS:
@@ -115,7 +117,7 @@ def get_consumption_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/gas-meter-points/"
                 + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
                 + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
-                + "?group_by=day&period_from=2022-07-20&page_size=1000"
+                + f"?group_by=day&{period_from()}&page_size=25000"
             )
             return url
         case _:
