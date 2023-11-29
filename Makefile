@@ -38,9 +38,28 @@ $(PREREQUISITES):
 		echo "$@ installed.";\
 	fi;
 
+# installs pipx
+.PHONY: pipx
+pipx:
+	@python3 -m pip install --user pipx
+	@python3 -m pipx ensurepath
+
+# goes through pixp dependencies and install each if it's not yet installed
+.PHONY: $(PIPX_DEPENDENCIES)
+$(PIPX_DEPENDENCIES): pipx
+	@if which $@; then\
+		echo "$@ is already installed.";\
+	else\
+		echo "Installing $@...";\
+		pipx install $@;\
+		echo "$@ installed.";\
+	fi;
+
+
+
 #dev-setup: @ Install the environment and pre-requisites
 .PHONY: dev-setup
-dev-setup: $(PREREQUISITES) venv deps
+dev-setup: $(PREREQUISITES) $(PIPX_DEPENDENCIES)
 
 
 

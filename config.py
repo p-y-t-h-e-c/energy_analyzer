@@ -1,5 +1,6 @@
 """Config module."""
 from datetime import date, timedelta
+from typing import Optional
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -46,24 +47,34 @@ class ProjectConfig(BaseSettings):
 CONFIG = ProjectConfig()
 
 
-def period_from() -> str:
+def period_from(from_date: Optional[str] = None) -> str:
     """Generate period_from date.
+
+    :param from_date: implicitly specified from date in the format 01-01-2023
 
     :return: period_from attribute
     """
-    db_url = CONFIG.db_url
-    db_connector = DbConnector(db_url.get_secret_value())
-    date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=7)
-    return f"period_from={date}"
+    if from_date:
+        return f"period_from={from_date}"
+    else:
+        db_url = CONFIG.db_url
+        db_connector = DbConnector(db_url.get_secret_value())
+        date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=20)
+        return f"period_from={date}"
 
 
-def period_to() -> str:
+def period_to(to_date: Optional[str] = None) -> str:
     """Generate period_to date.
+
+    :param to_date: implicitly specified to date in the format 31-12-2023
 
     :return: period_to attribute
     """
-    period_to = date.today() + timedelta(days=1)
-    return f"period_to={period_to}"
+    if to_date:
+        return f"&period_to={to_date}"
+    else:
+        period_to = date.today() + timedelta(days=1)
+        return f"period_to={period_to}"
 
 
 def get_rates_url(energy_type: EnergyType) -> str:
@@ -95,7 +106,13 @@ def get_rates_url(energy_type: EnergyType) -> str:
             assert_never(energy_type)
 
 
-def get_consumption_url(energy_type: EnergyType) -> str:
+# TODO: need a weekly tables for which group_by=week, period_from=01-01-2022/23
+# also period_to=31-12-2022/2023
+def get_consumption_url(
+    energy_type: EnergyType,
+    group_by: Optional[str] = "day",
+    period_from: Optional[str] = period_from(),
+) -> str:
     """Create either electricity or gas consumption url.
 
     :param energy_type: either electricity or gas energy type
@@ -109,7 +126,7 @@ def get_consumption_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/electricity-meter-points/"
                 + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
                 + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by=day&{period_from()}&page_size=25000"
+                + f"?group_by={group_by}&{period_from}&page_size=25000"
             )
             return url
         case EnergyType.GAS:
@@ -117,7 +134,7 @@ def get_consumption_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/gas-meter-points/"
                 + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
                 + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by=day&{period_from()}&page_size=25000"
+                + f"?group_by={group_by}&{period_from}&page_size=25000"
             )
             return url
         case _:
@@ -126,5 +143,5 @@ def get_consumption_url(energy_type: EnergyType) -> str:
 
 if __name__ == "__main__":
     # print(ProjectConfig().model_dump())
-    # print(period_to())
+    print(period_to())
     print(period_from())
