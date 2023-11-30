@@ -1,30 +1,28 @@
 # Project set up under Linux or WSL [ Ubuntu ] distro
 
-# Variables
-VENV           = .venv
-VENV_PYTHON    = $(VENV)/bin/python
-SYSTEM_PYTHON  = $(or $(shell which python3), $(shell which python))
-PYTHON         = $(or $(wildcard $(VENV_PYTHON)), $(SYSTEM_PYTHON))
+# Use at the top of the Makefile to make it work.
+# Import all the environment variables from the .env file.
+# If the result of $(wildcard ./.env) is not none then include .env
+# 	- wildcard will return all the files that match ./.env
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
 
-## Dev/build environment
-
-$(VENV_PYTHON):
-    rm -rf $(VENV)
-    $(SYSTEM_PYTHON) -m venv $(VENV)
-
-venv: $(VENV_PYTHON)
-
-deps:
-    $(PYTHON) -m pip install --upgrade pip
-    $(PYTHON) -m pip install pip-tools
-
-
+# checking if git repo and initiating it if no
+.PHONY: git
+git:
+	@if git status 2>/dev/null; then\
+		echo "inside git repo";\
+	else\
+		git init;\
+	fi;
 
 
-# Create package manager variable.
+# Package manager variable.
 PACKAGE_MANAGER ?= sudo apt-get
 
-# Project OS prerequisites variable
+# Linux common prerequisites variable
 PREREQUISITES := sed grep awk python3-pip libpq-dev
 
 # goes through prerequisites and install each if it's not yet installed
@@ -41,8 +39,11 @@ $(PREREQUISITES):
 # installs pipx
 .PHONY: pipx
 pipx:
-	@python3 -m pip install --user pipx
+	@python3 -m pip install --user -U pipx
 	@python3 -m pipx ensurepath
+
+# Pipx dependecies variable
+PIPX_DEPENDENCIES := poetry
 
 # goes through pixp dependencies and install each if it's not yet installed
 .PHONY: $(PIPX_DEPENDENCIES)
@@ -55,11 +56,32 @@ $(PIPX_DEPENDENCIES): pipx
 		echo "$@ installed.";\
 	fi;
 
+# `make project-init` - installs prerequisites, pipx, poetry, git,
+# 						creates virtual environment and an empty .env file
+.PHONY: project-init
+project-init: $(PREREQUISITES) $(PIPX_DEPENDENCIES) git
+	@poetry config virtualenvs.in-project true
+	@poetry install --with=dev
+	@poetry run pre-commit install
+	@touch .env
+	@echo "Virtual environment are ready and launched using:"
+	@echo "'source .venv/bin/activate'"
+
+# `make project-update` - get and install the latest versions of the dependencies
+# 						  and to update the poetry.lock file
+.PHONY: project-update
+project-update: pyproject.toml
+	@poetry update --with=dev
+
+# `make requirements.txt` - generate a requirements.txt file for the main code.
+requirements.txt: poetry.lock
+	@poetry export -f requirements.txt --without-hashes > requirements.txt
 
 
-#dev-setup: @ Install the environment and pre-requisites
-.PHONY: dev-setup
-dev-setup: $(PREREQUISITES) $(PIPX_DEPENDENCIES)
+# `make requirements_dev.txt` - generate a requirements_dev.txt for the dev dependencies.
+requirements_dev.txt: poetry.lock
+	@poetry export -f requirements.txt --with=dev --without-hashes > requirements_dev.txt
+
 
 
 
@@ -177,13 +199,8 @@ dev-setup: $(PREREQUISITES) $(PIPX_DEPENDENCIES)
 # poetry.lock: pyproject.toml
 # 	@poetry lock
 
-# #requirements.txt: @ Generate a requirements.txt file for the main code.
-# requirements.txt: poetry.lock
-# 	@poetry export -f requirements.txt --without-hashes > requirements.txt
 
-# #requirements_dev.txt: @ Generate a requirements.txt for the dev dependencies.
-# requirements_dev.txt: poetry.lock
-# 	@poetry export -f requirements.txt --with=dev --without-hashes > requirements_dev.txt
+
 
 
 # #pytest-parallel: @ Run pytest in parallel without end to end tests, change the number of workers in the makefile.
