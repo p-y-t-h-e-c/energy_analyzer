@@ -74,8 +74,8 @@ if __name__ == "__main__":
     db_url = config.db_url
     db_connector = DbConnector(db_url.get_secret_value())
 
-    print(db_connector.get_latest_date(ElectricityRatesTable))
+    # print(db_connector.get_latest_date(ElectricityRatesTable))
 
-    # db_connector.reset_database()
+    db_connector.reset_database()
 
     # db_connector.upsert_db(ElectricityRatesTable, data)

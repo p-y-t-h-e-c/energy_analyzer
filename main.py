@@ -56,6 +56,7 @@ def process_octopus_gas_data() -> None:
         rates_url=get_rates_url(energy_type=EnergyType.GAS),
         consumption_url=get_consumption_url(energy_type=EnergyType.GAS),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
+        gas_m3_to_kwh_conversion=CONFIG.gas_m3_to_kwh_conversion,
     )
 
     for unit_rate in gas_data.unit_rate:

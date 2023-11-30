@@ -4,10 +4,16 @@ from typing import Optional
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.exc import NoResultFound
 
 from data_models import EnergyType
 from database.db_connector import DbConnector
-from database.db_models import ElectricityRatesTable
+from database.db_models import (
+    ElectricityConsumptionTable,
+    ElectricityRatesTable,
+    GasConsumptionTable,
+    GasRatesTable,
+)
 from utils import assert_never
 
 
@@ -47,26 +53,29 @@ class ProjectConfig(BaseSettings):
 CONFIG = ProjectConfig()
 
 
-def period_from(from_date: Optional[str] = None) -> str:
+def period_from(table) -> str:
     """Generate period_from date.
 
-    :param from_date: implicitly specified from date in the format 01-01-2023
+    :param from_date: implicitly specified from date in the format 2023-01-01
 
     :return: period_from attribute
     """
-    if from_date:
-        return f"period_from={from_date}"
-    else:
-        db_url = CONFIG.db_url
-        db_connector = DbConnector(db_url.get_secret_value())
-        date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=20)
+    db_url = CONFIG.db_url
+    db_connector = DbConnector(db_url.get_secret_value())
+    try:
+        date = db_connector.get_latest_date(table) - timedelta(days=20)
         return f"period_from={date}"
+    except NoResultFound:
+        # db_url = CONFIG.db_url
+        # db_connector = DbConnector(db_url.get_secret_value())
+        # date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=20)
+        return "period_from=2022-07-01"
 
 
 def period_to(to_date: Optional[str] = None) -> str:
     """Generate period_to date.
 
-    :param to_date: implicitly specified to date in the format 31-12-2023
+    :param to_date: implicitly specified to date in the format 2023-12-31
 
     :return: period_to attribute
     """
@@ -91,7 +100,7 @@ def get_rates_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/products/"
                 + f"{CONFIG.product_code}/electricity-tariffs/"
                 + f"{CONFIG.e_tariff_code}/standard-unit-rates/"
-                + f"?{period_from()}&{period_to()}&page_size=1500"  #
+                + f"?{period_from(ElectricityRatesTable)}&{period_to()}&page_size=1500"
             )
             return url
         case EnergyType.GAS:
@@ -99,7 +108,7 @@ def get_rates_url(energy_type: EnergyType) -> str:
                 f"{CONFIG.octopus_api_url}/products/"
                 + f"{CONFIG.product_code}/gas-tariffs/"
                 + f"{CONFIG.g_tariff_code}/standard-unit-rates/"
-                + f"?{period_from()}&{period_to()}&page_size=1500"
+                + f"?{period_from(GasRatesTable)}&{period_to()}&page_size=1500"
             )
             return url
         case _:
@@ -111,7 +120,6 @@ def get_rates_url(energy_type: EnergyType) -> str:
 def get_consumption_url(
     energy_type: EnergyType,
     group_by: Optional[str] = "day",
-    period_from: Optional[str] = period_from(),
 ) -> str:
     """Create either electricity or gas consumption url.
 
@@ -126,7 +134,7 @@ def get_consumption_url(
                 f"{CONFIG.octopus_api_url}/electricity-meter-points/"
                 + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
                 + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by={group_by}&{period_from}&page_size=25000"
+                + f"?group_by={group_by}&{period_from(ElectricityConsumptionTable)}&page_size=25000"
             )
             return url
         case EnergyType.GAS:
@@ -134,7 +142,7 @@ def get_consumption_url(
                 f"{CONFIG.octopus_api_url}/gas-meter-points/"
                 + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
                 + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by={group_by}&{period_from}&page_size=25000"
+                + f"?group_by={group_by}&{period_from(GasConsumptionTable)}&page_size=25000"
             )
             return url
         case _:
@@ -144,4 +152,5 @@ def get_consumption_url(
 if __name__ == "__main__":
     # print(ProjectConfig().model_dump())
     print(period_to())
-    print(period_from())
+    print(period_from(ElectricityRatesTable))
+    print(get_rates_url(EnergyType.ELECTRICITY))
