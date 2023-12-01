@@ -19,6 +19,16 @@ git:
 	fi;
 
 
+# checking if .env file exists and creates it if no
+.PHONY: env
+env:
+	@if [ -e .env ]; then\
+		echo "env already exist";\
+	else\
+		echo "creating .env file";\
+		touch .env;\
+	fi;
+
 # Package manager variable.
 PACKAGE_MANAGER ?= sudo apt-get
 
@@ -59,13 +69,15 @@ $(PIPX_DEPENDENCIES): pipx
 # `make project-init` - installs prerequisites, pipx, poetry, git,
 # 						creates virtual environment and an empty .env file
 .PHONY: project-init
-project-init: $(PREREQUISITES) $(PIPX_DEPENDENCIES) git
+project-init: $(PREREQUISITES) $(PIPX_DEPENDENCIES) git env
 	@poetry config virtualenvs.in-project true
-	@poetry install --with=dev
+	@poetry install --with=dev --no-root
 	@poetry run pre-commit install
-	@touch .env
 	@echo "Virtual environment are ready and launched using:"
 	@echo "'source .venv/bin/activate'"
+
+# TODO: create .env file if doesn't exist
+
 
 # `make project-update` - get and install the latest versions of the dependencies
 # 						  and to update the poetry.lock file

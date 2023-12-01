@@ -7,9 +7,11 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 # Core dependencies.
-python = "^3.10"
+python = "^3.11"
 pydantic-settings = "^2.1.0"
 sqlalchemy = "^2.0.23"
+psycopg2 = "^2.0.0"
+prefect = "^2.14.8"
 
 
 [tool.poetry.group.dev.dependencies]

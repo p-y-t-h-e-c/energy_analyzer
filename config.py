@@ -150,7 +150,7 @@ def get_consumption_url(
 
 
 if __name__ == "__main__":
-    # print(ProjectConfig().model_dump())
-    print(period_to())
-    print(period_from(ElectricityRatesTable))
-    print(get_rates_url(EnergyType.ELECTRICITY))
+    print(ProjectConfig().model_dump())
+    # print(period_to())
+    # print(period_from(ElectricityRatesTable))
+    # print(get_rates_url(EnergyType.ELECTRICITY))
