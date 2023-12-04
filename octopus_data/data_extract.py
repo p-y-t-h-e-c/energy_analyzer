@@ -113,6 +113,8 @@ class GasDataExtractor(_DataExtractor):
 
 
 if __name__ == "__main__":
+    import pandas as pd
+
     from config import ProjectConfig, get_consumption_url, get_rates_url
     from data_models import EnergyType
 
@@ -125,4 +127,7 @@ if __name__ == "__main__":
         api_key=config.octopus_api_key.get_secret_value(),
     )
 
-    print(electricity_data.unit_rate)
+    # print(electricity_data.unit_rate)
+    df = pd.DataFrame(electricity_data.unit_rate)
+    print(df["unit_rate_inc_vat"].tail(2).diff().tail(1).values)
+    print(df["unit_rate_inc_vat"].iloc[-2:].diff().iloc[-1:].values)

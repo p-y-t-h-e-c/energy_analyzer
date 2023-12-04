@@ -47,7 +47,7 @@ class DbConnector:
 
         :param table: a selected table to get the latest date from
 
-        :return:
+        :return: the latest date from a table
         """
         with self.session as session:
             stmt = select(table.date).order_by(desc(table.date)).limit(1)

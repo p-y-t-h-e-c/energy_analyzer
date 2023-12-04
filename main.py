@@ -1,8 +1,9 @@
 """Main module."""
 import requests
+from prefect import flow, task
 
 from config import ProjectConfig, get_consumption_url, get_rates_url
-from data_models import EnergyType
+from data_models import ElectricityData, EnergyType, GasData
 from database.db_connector import DbConnector
 from database.db_models import (
     ElectricityConsumptionTable,
@@ -27,7 +28,19 @@ def get_account_info():
     url = "https://api.octopus.energy/v1/accounts/" + CONFIG.account.get_secret_value()
     r = requests.get(url, auth=(CONFIG.octopus_api_key.get_secret_value(), ""))
     output_dict = r.json()
-    return output_dict
+    return output_dict["properties"]
+
+
+@task
+def get_ocotpus_electricity_data() -> ElectricityData:
+    """Get Octopus electricity data."""
+    electricity_data_extractor = ElectricityDataExtractor()
+    electricity_data = electricity_data_extractor.get_electricity_data(
+        rates_url=get_rates_url(energy_type=EnergyType.ELECTRICITY),
+        consumption_url=get_consumption_url(energy_type=EnergyType.ELECTRICITY),
+        api_key=CONFIG.octopus_api_key.get_secret_value(),
+    )
+    return electricity_data
 
 
 def process_octopus_electricity_data() -> None:
@@ -72,5 +85,8 @@ def process_octopus_gas_data() -> None:
 if __name__ == "__main__":
     from database.db_models import Base
 
-    process_octopus_electricity_data()
-    process_octopus_gas_data()
+    # process_octopus_electricity_data()
+    # process_octopus_gas_data()
+    properties = get_account_info()
+    for property in properties:
+        print(f"{property["agreements"]}\n\n")

@@ -49,6 +49,16 @@ class ProjectConfig(BaseSettings):
     # Database
     db_url: SecretStr = Field(default=None, alias="DATABASE_URL")
 
+    # PushStaq
+    pushstaq_api_url: str = "https://www.pushstaq.com/api/push/"
+    pushstaq_api_key: SecretStr = Field(default=None, alias="PUSHSTAQ_API_KEY")
+
+
+# {'tariff_code': 'E-1R-VAR-22-04-02-B', 'valid_from': '2022-08-01T00:00:00+01:00', 'valid_to': '2023-02-13T00:00:00Z'}
+# {'tariff_code': 'E-1R-SILVER-FLEX-22-11-25-B', 'valid_from': '2023-02-13T00:00:00Z', 'valid_to': None}
+# {'tariff_code': 'G-1R-VAR-22-04-02-B', 'valid_from': '2022-08-01T00:00:00+01:00', 'valid_to': '2023-02-13T00:00:00Z'}
+# {'tariff_code': 'G-1R-SILVER-FLEX-22-11-25-B', 'valid_from': '2023-02-13T00:00:00Z', 'valid_to': None}
+
 
 CONFIG = ProjectConfig()
 
