@@ -41,7 +41,7 @@ class _DataExtractor:
     def _get_consumption_values(
         self, url: str, api_key: str, gas_m3_to_kwh_conversion: Optional[float] = 1
     ) -> List[dict[str, Any]]:
-        """Export daily consumption values.
+        """Extract daily consumption values.
 
         :param url: url for the API request
         :param api_key: API Key required of the request
@@ -63,12 +63,41 @@ class _DataExtractor:
         consumption_values.sort(key=lambda item: item["date"], reverse=False)
         return consumption_values
 
+    def _get_weekly_consumption_values(
+        self, url: str, api_key: str, gas_m3_to_kwh_conversion: Optional[float] = 1
+    ) -> List[dict[str, Any]]:
+        """Extract weekly consumption values.
+
+        :param url: url for the API request
+        :param api_key: API Key required of the request
+        :param gas_m3_to_kwh_conversion: gas cubic meter to KWh conversion factor
+
+        :return: A list of dictionaries
+        """
+        response = requests.get(url, auth=(api_key, ""))
+        output_dict = response.json()
+        consumption_values = []
+        for result in output_dict["results"]:
+            consumption_unit = {
+                "week": datetime.fromisoformat(result["interval_start"])
+                .isocalendar()
+                .week,
+                "consumption": result["consumption"] * gas_m3_to_kwh_conversion,
+            }
+            consumption_values.append(consumption_unit)
+        consumption_values.sort(key=lambda item: item["week"], reverse=False)
+        return consumption_values
+
 
 class ElectricityDataExtractor(_DataExtractor):
     """Electricity Data Extractor class."""
 
     def get_electricity_data(
-        self, rates_url: str, consumption_url: str, api_key: str
+        self,
+        rates_url: str,
+        consumption_url: str,
+        api_key: str,
+        group_by_period: str = "day",
     ) -> ElectricityData:
         """Gather electricity rates and consumption data.
 
@@ -79,10 +108,17 @@ class ElectricityDataExtractor(_DataExtractor):
         :return: instance of ElectricityData class
         """
         electricity_data = ElectricityData()
-        electricity_data.unit_rate = self._get_standard_unit_rates(rates_url)
-        electricity_data.consumption = self._get_consumption_values(
-            consumption_url, api_key
-        )
+        if group_by_period == "day":
+            electricity_data.unit_rate = self._get_standard_unit_rates(rates_url)
+
+            electricity_data.consumption = self._get_consumption_values(
+                consumption_url, api_key
+            )
+        else:
+            electricity_data.consumption = self._get_weekly_consumption_values(
+                consumption_url, api_key
+            )
+
         return electricity_data
 
 
@@ -94,7 +130,7 @@ class GasDataExtractor(_DataExtractor):
         rates_url: str,
         consumption_url: str,
         api_key: str,
-        gas_m3_to_kwh_conversion: Optional[float] = 1,
+        gas_m3_to_kwh_conversion: float,
     ) -> GasData:
         """Gather electricity rates and consumption data.
 
@@ -115,19 +151,23 @@ class GasDataExtractor(_DataExtractor):
 if __name__ == "__main__":
     import pandas as pd
 
-    from config import ProjectConfig, get_consumption_url, get_rates_url
+    from config import ProjectConfig, UrlGenerator
     from data_models import EnergyType
 
     config = ProjectConfig()
+    url_generator = UrlGenerator()
 
     electricity_data_extractor = ElectricityDataExtractor()
     electricity_data = electricity_data_extractor.get_electricity_data(
-        rates_url=get_rates_url(energy_type=EnergyType.ELECTRICITY),
-        consumption_url=get_consumption_url(energy_type=EnergyType.ELECTRICITY),
+        rates_url=url_generator.get_electricity_rates_url(),
+        consumption_url=url_generator.get_electricity_consumption_url(
+            group_by="week", period_from="2022-01-01", period_to="2022-12-31"
+        ),
         api_key=config.octopus_api_key.get_secret_value(),
+        group_by_period="week",
     )
 
-    # print(electricity_data.unit_rate)
-    df = pd.DataFrame(electricity_data.unit_rate)
-    print(df["unit_rate_inc_vat"].tail(2).diff().tail(1).values)
-    print(df["unit_rate_inc_vat"].iloc[-2:].diff().iloc[-1:].values)
+    print(electricity_data.consumption)
+    # df = pd.DataFrame(electricity_data.unit_rate)
+    # print(df["unit_rate_inc_vat"].tail(2).diff().tail(1).values)
+    # print(df["unit_rate_inc_vat"].iloc[-2:].diff().iloc[-1:].values)

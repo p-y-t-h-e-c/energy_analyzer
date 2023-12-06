@@ -63,100 +63,131 @@ class ProjectConfig(BaseSettings):
 CONFIG = ProjectConfig()
 
 
-def period_from(table) -> str:
-    """Generate period_from date.
+class UrlGenerator:
+    """URL generator class."""
 
-    :param from_date: implicitly specified from date in the format 2023-01-01
+    def _get_group_by(self, group_by: Optional[str] = "day") -> str:
+        """Get group by condition."""
+        return f"group_by={group_by}"
 
-    :return: period_from attribute
-    """
-    db_url = CONFIG.db_url
-    db_connector = DbConnector(db_url.get_secret_value())
-    try:
-        date = db_connector.get_latest_date(table) - timedelta(days=20)
-        return f"period_from={date}"
-    except NoResultFound:
-        # db_url = CONFIG.db_url
-        # db_connector = DbConnector(db_url.get_secret_value())
-        # date = db_connector.get_latest_date(ElectricityRatesTable) - timedelta(days=20)
-        return "period_from=2022-07-01"
+    def _get_period_from(self, table, period_from: Optional[str] = None) -> str:
+        """Generate period_from date.
 
+        :param from_date: implicitly specified from date in the format 2023-01-01
 
-def period_to(to_date: Optional[str] = None) -> str:
-    """Generate period_to date.
+        :return: period_from attribute
+        """
+        if period_from:
+            return f"period_from={period_from}"
+        else:
+            db_url = CONFIG.db_url
+            db_connector = DbConnector(db_url.get_secret_value())
+            try:
+                date_from = db_connector.get_latest_date(table) - timedelta(days=20)
+                return f"period_from={date_from}"
+            except NoResultFound:
+                return "period_from=2022-07-01"
 
-    :param to_date: implicitly specified to date in the format 2023-12-31
+    def _get_period_to(self, period_to: Optional[str] = None) -> str:
+        """Generate period_to date.
 
-    :return: period_to attribute
-    """
-    if to_date:
-        return f"&period_to={to_date}"
-    else:
-        period_to = date.today() + timedelta(days=1)
-        return f"period_to={period_to}"
+        :param to_date: implicitly specified to date in the format 2023-12-31
 
+        :return: period_to attribute
+        """
+        if period_to:
+            return f"&period_to={period_to}"
+        else:
+            date_to = date.today() + timedelta(days=1)
+            return f"&period_to={date_to}"
 
-def get_rates_url(energy_type: EnergyType) -> str:
-    """Create either electricity or gas rates url.
+    def get_electricity_rates_url(
+        self, period_from: Optional[str] = None, period_to: Optional[str] = None
+    ) -> str:
+        """Create electricity rates url.
 
-    :param energy_type: either electricity or gas energy type
+        :param period_from:
+        :param period_to:
 
-    :return: rates url link
-    """
-    # page_size - default is 100, maximum is 1,500 for rates
-    match energy_type:
-        case EnergyType.ELECTRICITY:
-            url = (
-                f"{CONFIG.octopus_api_url}/products/"
-                + f"{CONFIG.product_code}/electricity-tariffs/"
-                + f"{CONFIG.e_tariff_code}/standard-unit-rates/"
-                + f"?{period_from(ElectricityRatesTable)}&{period_to()}&page_size=1500"
-            )
-            return url
-        case EnergyType.GAS:
-            url = (
-                f"{CONFIG.octopus_api_url}/products/"
-                + f"{CONFIG.product_code}/gas-tariffs/"
-                + f"{CONFIG.g_tariff_code}/standard-unit-rates/"
-                + f"?{period_from(GasRatesTable)}&{period_to()}&page_size=1500"
-            )
-            return url
-        case _:
-            assert_never(energy_type)
+        :return: rates url link
+        """
+        # page_size - default is 100, maximum is 1,500 for rates
+        url = (
+            f"{CONFIG.octopus_api_url}/products/"
+            + f"{CONFIG.product_code}/electricity-tariffs/"
+            + f"{CONFIG.e_tariff_code}/standard-unit-rates/"
+            + f"?{self._get_period_from(ElectricityRatesTable, period_from)}"
+            + f"{self._get_period_to(period_to)}&page_size=1500"
+        )
+        return url
 
+    def get_gas_rates_url(
+        self, period_from: Optional[str] = None, period_to: Optional[str] = None
+    ) -> str:
+        """Create gas rates url.
 
-# TODO: need a weekly tables for which group_by=week, period_from=01-01-2022/23
-# also period_to=31-12-2022/2023
-def get_consumption_url(
-    energy_type: EnergyType,
-    group_by: Optional[str] = "day",
-) -> str:
-    """Create either electricity or gas consumption url.
+        :param period_from:
+        :param period_to:
 
-    :param energy_type: either electricity or gas energy type
+        :return: rates url link
+        """
+        # page_size - default is 100, maximum is 1,500 for rates
+        url = (
+            f"{CONFIG.octopus_api_url}/products/"
+            + f"{CONFIG.product_code}/gas-tariffs/"
+            + f"{CONFIG.g_tariff_code}/standard-unit-rates/"
+            + f"?{self._get_period_from(GasRatesTable, period_from)}"
+            + f"{self._get_period_to(period_to)}&page_size=1500"
+        )
+        return url
 
-    :return: consumption url link
-    """
-    # page_size - default is 100, maximum is 25,000 for consumption
-    match energy_type:
-        case EnergyType.ELECTRICITY:
-            url = (
-                f"{CONFIG.octopus_api_url}/electricity-meter-points/"
-                + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
-                + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by={group_by}&{period_from(ElectricityConsumptionTable)}&page_size=25000"
-            )
-            return url
-        case EnergyType.GAS:
-            url = (
-                f"{CONFIG.octopus_api_url}/gas-meter-points/"
-                + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
-                + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
-                + f"?group_by={group_by}&{period_from(GasConsumptionTable)}&page_size=25000"
-            )
-            return url
-        case _:
-            assert_never(energy_type)
+    def get_electricity_consumption_url(
+        self,
+        group_by: Optional[str] = "day",
+        period_from: Optional[str] = None,
+        period_to: Optional[str] = None,
+    ) -> str:
+        """Create electricity consumption url.
+
+        :param energy_type: either electricity or gas energy type
+
+        :return: consumption url link
+        """
+        # page_size - default is 100, maximum is 25,000 for consumption
+        print(group_by)
+        url = (
+            f"{CONFIG.octopus_api_url}/electricity-meter-points/"
+            + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
+            + f"{CONFIG.e_serial_no.get_secret_value()}/consumption/"
+            + f"?{self._get_group_by(group_by)}&"
+            + f"{self._get_period_from(ElectricityConsumptionTable, period_from)}"
+            + f"{self._get_period_to(period_to)}&page_size=25000"
+        )
+        return url
+
+    def get_gas_consumption_url(
+        self,
+        group_by: Optional[str] = "day",
+        period_from: Optional[str] = None,
+        period_to: Optional[str] = None,
+    ) -> str:
+        """Create gas consumption url.
+
+        :param energy_type: either electricity or gas energy type
+
+        :return: consumption url link
+        """
+        # page_size - default is 100, maximum is 25,000 for consumption
+        print(group_by)
+        url = (
+            f"{CONFIG.octopus_api_url}/gas-meter-points/"
+            + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
+            + f"{CONFIG.g_serial_no.get_secret_value()}/consumption/"
+            + f"?{self._get_group_by(group_by)}&"
+            + f"{self._get_period_from(GasConsumptionTable, period_from)}"
+            + f"{self._get_period_to(period_to)}&page_size=25000"
+        )
+        return url
 
 
 if __name__ == "__main__":
@@ -164,3 +195,6 @@ if __name__ == "__main__":
     # print(period_to())
     # print(period_from(ElectricityRatesTable))
     # print(get_rates_url(EnergyType.ELECTRICITY))
+    url_generator = UrlGenerator()
+    print(url_generator.get_electricity_consumption_url())
+    print(url_generator._get_group_by())

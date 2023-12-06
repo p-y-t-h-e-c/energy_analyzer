@@ -1,14 +1,12 @@
 """Database models."""
 from typing import Type, Union
 
-from sqlalchemy import Date, DateTime, Float, Table
+from sqlalchemy import Date, Float, String, Table
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column
 
 
 class Base(DeclarativeBase, MappedAsDataclass):
     """Tables dafinition base class."""
-
-    date: Mapped[Date] = mapped_column(Date, primary_key=True)
 
     @classmethod
     def db_table(cls) -> Table:
@@ -21,6 +19,7 @@ class ElectricityRatesTable(Base):
 
     __tablename__ = "electricity_rates"
 
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
     unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
     unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
@@ -30,6 +29,7 @@ class GasRatesTable(Base):
 
     __tablename__ = "gas_rates"
 
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
     unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
     unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
@@ -39,6 +39,7 @@ class ElectricityConsumptionTable(Base):
 
     __tablename__ = "electricity_consumption"
 
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
@@ -47,6 +48,16 @@ class GasConsumptionTable(Base):
 
     __tablename__ = "gas_consumption"
 
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
+class ElectricityWeeklyConsumptionTable2022(Base):
+    """Electricity consumption table."""
+
+    __tablename__ = "electricity_weekly_consumption_2022"
+
+    week: Mapped[str] = mapped_column(String, primary_key=True)
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
