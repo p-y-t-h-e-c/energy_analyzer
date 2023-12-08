@@ -97,7 +97,7 @@ class ElectricityDataExtractor(_DataExtractor):
         rates_url: str,
         consumption_url: str,
         api_key: str,
-        group_by_period: str = "day",
+        group_by: str = "day",
     ) -> ElectricityData:
         """Gather electricity rates and consumption data.
 
@@ -108,7 +108,7 @@ class ElectricityDataExtractor(_DataExtractor):
         :return: instance of ElectricityData class
         """
         electricity_data = ElectricityData()
-        if group_by_period == "day":
+        if group_by == "day":
             electricity_data.unit_rate = self._get_standard_unit_rates(rates_url)
 
             electricity_data.consumption = self._get_consumption_values(
@@ -161,10 +161,10 @@ if __name__ == "__main__":
     electricity_data = electricity_data_extractor.get_electricity_data(
         rates_url=url_generator.get_electricity_rates_url(),
         consumption_url=url_generator.get_electricity_consumption_url(
-            group_by="week", period_from="2022-01-01", period_to="2022-12-31"
+            group_by="week", period_from="2023", period_to="2023-12-31"
         ),
         api_key=config.octopus_api_key.get_secret_value(),
-        group_by_period="week",
+        group_by="week",
     )
 
     print(electricity_data.consumption)

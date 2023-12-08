@@ -61,9 +61,20 @@ class ElectricityWeeklyConsumptionTable2022(Base):
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
+class ElectricityWeeklyConsumptionTable2023(Base):
+    """Electricity consumption table."""
+
+    __tablename__ = "electricity_weekly_consumption_2023"
+
+    week: Mapped[str] = mapped_column(String, primary_key=True)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
 OctopusTables = Union[
     Type[ElectricityRatesTable],
     Type[ElectricityConsumptionTable],
     Type[GasRatesTable],
     Type[GasConsumptionTable],
+    Type[ElectricityWeeklyConsumptionTable2022],
+    Type[ElectricityWeeklyConsumptionTable2023],
 ]

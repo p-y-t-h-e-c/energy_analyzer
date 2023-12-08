@@ -1,4 +1,5 @@
 """Config module."""
+import datetime
 from datetime import date, timedelta
 from typing import Optional
 
@@ -78,7 +79,9 @@ class UrlGenerator:
         :return: period_from attribute
         """
         if period_from:
-            return f"period_from={period_from}"
+            mon_date = datetime.datetime.strptime(period_from + "1" + "1", "%Y%W%w")
+            # print(mon_date.date())
+            return f"period_from={mon_date}"
         else:
             db_url = CONFIG.db_url
             db_connector = DbConnector(db_url.get_secret_value())
@@ -154,7 +157,6 @@ class UrlGenerator:
         :return: consumption url link
         """
         # page_size - default is 100, maximum is 25,000 for consumption
-        print(group_by)
         url = (
             f"{CONFIG.octopus_api_url}/electricity-meter-points/"
             + f"{CONFIG.e_MPAN.get_secret_value()}/meters/"
@@ -178,7 +180,6 @@ class UrlGenerator:
         :return: consumption url link
         """
         # page_size - default is 100, maximum is 25,000 for consumption
-        print(group_by)
         url = (
             f"{CONFIG.octopus_api_url}/gas-meter-points/"
             + f"{CONFIG.g_MPRN.get_secret_value()}/meters/"
@@ -191,10 +192,11 @@ class UrlGenerator:
 
 
 if __name__ == "__main__":
-    print(ProjectConfig().model_dump())
+    # print(ProjectConfig().model_dump())
     # print(period_to())
     # print(period_from(ElectricityRatesTable))
     # print(get_rates_url(EnergyType.ELECTRICITY))
     url_generator = UrlGenerator()
-    print(url_generator.get_electricity_consumption_url())
-    print(url_generator._get_group_by())
+    # print(url_generator.get_electricity_consumption_url())
+    # print(url_generator._get_group_by())
+    url_generator._get_period_from(ElectricityConsumptionTable, period_from="2022")

@@ -1,8 +1,10 @@
 """Database connector module."""
+import datetime
 import logging
 from datetime import date
 from typing import Any
 
+import sqlalchemy as sa
 from sqlalchemy import create_engine, desc, select
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.exc import IntegrityError
@@ -50,19 +52,33 @@ class DbConnector:
         :return: the latest date from a table
         """
         with self.session as session:
-            stmt = select(table.date).order_by(desc(table.date)).limit(1)
-            result = session.execute(stmt)
-            return result.scalar_one()
+            if table.db_table().primary_key.columns.values()[0].name == "date":
+                table_column = table.db_table().columns.__getattr__("date")
+                stmt = select(table_column).order_by(desc(table_column)).limit(1)
+                result = session.execute(stmt)
+                session.commit()
+                return result.scalar_one()
+            else:
+                current_year = datetime.date.today().year
+                from_date = f"{current_year}-01-01"
+                datetime_object = datetime.datetime.strptime(
+                    from_date, "%Y-%m-%d"
+                ).date()
+                return datetime_object
 
     def reset_database(self) -> None:
         """Reset Database."""
-        Base.metadata.drop_all(self._engine)
+        # Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
 
 
 if __name__ == "__main__":
     from config import ProjectConfig
-    from database.db_models import Base, ElectricityRatesTable
+    from database.db_models import (
+        Base,
+        ElectricityRatesTable,
+        ElectricityWeeklyConsumptionTable2022,
+    )
 
     config = ProjectConfig()
 
@@ -74,7 +90,7 @@ if __name__ == "__main__":
     db_url = config.db_url
     db_connector = DbConnector(db_url.get_secret_value())
 
-    # print(db_connector.get_latest_date(ElectricityRatesTable))
+    # print(db_connector.get_latest_date(ElectricityWeeklyConsumptionTable2022))
 
     db_connector.reset_database()
 
