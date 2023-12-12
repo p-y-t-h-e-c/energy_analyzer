@@ -131,6 +131,7 @@ class GasDataExtractor(_DataExtractor):
         consumption_url: str,
         api_key: str,
         gas_m3_to_kwh_conversion: float,
+        group_by: str = "day",
     ) -> GasData:
         """Gather electricity rates and consumption data.
 
@@ -141,10 +142,16 @@ class GasDataExtractor(_DataExtractor):
         :return: instance of ElectricityData class
         """
         gas_data = GasData()
-        gas_data.unit_rate = self._get_standard_unit_rates(rates_url)
-        gas_data.consumption = self._get_consumption_values(
-            consumption_url, api_key, gas_m3_to_kwh_conversion
-        )
+        if group_by == "day":
+            gas_data.unit_rate = self._get_standard_unit_rates(rates_url)
+
+            gas_data.consumption = self._get_consumption_values(
+                consumption_url, api_key, gas_m3_to_kwh_conversion
+            )
+        else:
+            gas_data.consumption = self._get_weekly_consumption_values(
+                consumption_url, api_key, gas_m3_to_kwh_conversion
+            )
         return gas_data
 
 

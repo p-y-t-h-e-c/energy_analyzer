@@ -14,6 +14,9 @@ from database.db_models import (
     ElectricityWeeklyConsumptionTable2023,
     GasConsumptionTable,
     GasRatesTable,
+    GasWeeklyConsumptionTable2022,
+    GasWeeklyConsumptionTable2023,
+    OctopusTables,
 )
 from octopus_data.data_extract import ElectricityDataExtractor, GasDataExtractor
 
@@ -67,7 +70,7 @@ def add_octopus_electricity_data_to_db(electricity_data: ElectricityData) -> Non
 
 @task(name="Get Weekly Electricity Data")
 def get_weekly_electricity_consumption_data(
-    group_by="week", period_from="2023-01-01", period_to="2023-12-31"
+    group_by="week", period_from="2023", period_to="2023-12-31"
 ):
     """Get Octopus weekly electricity data."""
     electricity_data_extractor = ElectricityDataExtractor()
@@ -126,6 +129,38 @@ def add_octopus_gas_data_to_db(gas_data: GasData) -> None:
         time.sleep(1)
 
 
+@task(name="Get Weekly Gas Data")
+def get_weekly_gas_consumption_data(
+    group_by="week", period_from="2023", period_to="2023-12-31"
+):
+    """Get Octopus weekly gas data."""
+    gas_data_extractor = GasDataExtractor()
+    gas_data = gas_data_extractor.get_gas_data(
+        rates_url=URL_GENERATOR.get_gas_rates_url(),
+        consumption_url=URL_GENERATOR.get_gas_consumption_url(
+            group_by, period_from, period_to
+        ),
+        api_key=CONFIG.octopus_api_key.get_secret_value(),
+        gas_m3_to_kwh_conversion=CONFIG.gas_m3_to_kwh_conversion,
+        group_by=group_by,
+    )
+    return gas_data
+
+
+@task(name="Add Weekly Gas Data to Db")
+def add_weekly_gas_consumption_data(gas_data: GasData):
+    """Process Octopus gas weekly consumption data.
+
+    :param electricity_data: rates and consumption electricity data
+    """
+    for consumption_unit in gas_data.consumption:
+        DB_CONNECTOR.upsert_db(
+            table=GasWeeklyConsumptionTable2023,
+            data=consumption_unit,
+        )
+        time.sleep(1)
+
+
 @flow(name="Process Octopus Data")
 def process_octopus_data():
     """Process Octopus Electricity Data."""
@@ -151,6 +186,16 @@ def process_octopus_data():
     LOGGER.info("Adding Electricity Weekly Consumption Data to Db.")
     weekly_electricity_consumption_data_to_db = add_weekly_electricity_consumption_data(
         weekly_electricity_consumption_data
+    )
+
+    time.sleep(5)
+
+    LOGGER.info("Extracting Gas Weekly Consumption.")
+    weekly_gas_consumption_data = get_weekly_gas_consumption_data()
+
+    LOGGER.info("Adding Gas Weekly Consumption Data to Db.")
+    weekly_gas_consumption_data_to_db = add_weekly_gas_consumption_data(
+        weekly_gas_consumption_data
     )
 
 

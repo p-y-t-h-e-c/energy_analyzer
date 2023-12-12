@@ -68,7 +68,7 @@ class DbConnector:
 
     def reset_database(self) -> None:
         """Reset Database."""
-        # Base.metadata.drop_all(self._engine)
+        Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
 
 
