@@ -7,7 +7,6 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.exc import NoResultFound
 
-from data_models import EnergyType
 from database.db_connector import DbConnector
 from database.db_models import (
     ElectricityConsumptionTable,
@@ -86,7 +85,7 @@ class UrlGenerator:
             db_url = CONFIG.db_url
             db_connector = DbConnector(db_url.get_secret_value())
             try:
-                date_from = db_connector.get_latest_date(table) - timedelta(days=20)
+                date_from = db_connector.get_latest_date(table) - timedelta(days=30)
                 return f"period_from={date_from}"
             except NoResultFound:
                 return "period_from=2022-07-01"
@@ -101,7 +100,7 @@ class UrlGenerator:
         if period_to:
             return f"&period_to={period_to}"
         else:
-            date_to = date.today() + timedelta(days=1)
+            date_to = date.today() + timedelta(days=14)
             return f"&period_to={date_to}"
 
     def get_electricity_rates_url(
@@ -192,11 +191,12 @@ class UrlGenerator:
 
 
 if __name__ == "__main__":
-    # print(ProjectConfig().model_dump())
-    # print(period_to())
-    # print(period_from(ElectricityRatesTable))
-    # print(get_rates_url(EnergyType.ELECTRICITY))
-    url_generator = UrlGenerator()
-    # print(url_generator.get_electricity_consumption_url())
-    # print(url_generator._get_group_by())
-    url_generator._get_period_from(ElectricityConsumptionTable, period_from="2022")
+    print(ProjectConfig().model_dump())
+    # # print(period_to())
+    # # print(period_from(ElectricityRatesTable))
+    # # print(get_rates_url(EnergyType.ELECTRICITY))
+    # url_generator = UrlGenerator()
+    # # print(url_generator.get_electricity_consumption_url())
+    # # print(url_generator._get_group_by())
+    # url_generator._get_period_from(ElectricityConsumptionTable, period_from="2022")
+    # print(url_generator.get_electricity_rates_url())

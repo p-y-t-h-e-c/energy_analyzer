@@ -5,6 +5,56 @@ from typing import Any, List
 from pydantic import BaseModel
 
 
+class RatesData(BaseModel):
+    """Energy Rates dataclass."""
+
+    date: str
+    unit_rate_exc_vat: float
+    unit_rate_inc_vat: float
+
+
+class ElectricityRates(RatesData):
+    """Electricity Rates dataclass."""
+
+
+class GasRates(RatesData):
+    """Gas Rates dataclass."""
+
+
+class ConsumptionData(BaseModel):
+    """Energy Consumption dataclass."""
+
+    consumption: float
+
+
+class DailyConsumption(ConsumptionData):
+    """Daily Consumption dataclass."""
+
+    date: str
+
+
+class DailyElectricityConsumption(DailyConsumption):
+    """Daily Electricity Consumption dataclass."""
+
+
+class DailyGasConsumption(DailyConsumption):
+    """Daily Gas Consumption dataclass."""
+
+
+class WeeklyConsumption(ConsumptionData):
+    """Weekly Consumption dataclass."""
+
+    week: str
+
+
+class WeeklyElectricityConsumption(DailyConsumption):
+    """Weekly Electricity Consumption dataclass."""
+
+
+class WeeklyGasConsumption(DailyConsumption):
+    """Weekly Gas Consumption dataclass."""
+
+
 class EnergyData(BaseModel):
     """Energy Data dataclass."""
 
@@ -18,25 +68,3 @@ class ElectricityData(EnergyData):
 
 class GasData(EnergyData):
     """Gas data dataclass."""
-
-
-class ElectricityRates(BaseModel):
-    """Electric rates dataclass."""
-
-    date: str
-    unit_rate_exc_vat: str
-    unit_rate_inc_vat: str
-
-
-class EnergyType(str, Enum):
-    """Energy type dataclass."""
-
-    ELECTRICITY = "ELECTRICITY"
-    GAS = "GAS"
-
-
-class EnergyFactor(str, Enum):
-    """Energy factor dataclass."""
-
-    RATE = "RATE"
-    CONSUMPTION = "CONSUMPTION"

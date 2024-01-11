@@ -10,11 +10,6 @@ from data_models import ElectricityData, GasData
 class _DataExtractor:
     """Data extractor class."""
 
-    def __init__(self) -> None:
-        """Class constructor."""
-        self.unit_rates: List[dict[str, Any]] = []
-        self.consumption_values: List[dict[str, Any]] = []
-
     def _get_standard_unit_rates(self, url: str) -> List[dict[str, Any]]:
         """Export standard unit rates.
 
@@ -79,9 +74,7 @@ class _DataExtractor:
         consumption_values = []
         for result in output_dict["results"]:
             consumption_unit = {
-                "week": datetime.fromisoformat(result["interval_start"])
-                .isocalendar()
-                .week,
+                "week": datetime.fromisoformat(result["interval_start"]).strftime("%V"),
                 "consumption": result["consumption"] * gas_m3_to_kwh_conversion,
             }
             consumption_values.append(consumption_unit)
@@ -159,22 +152,59 @@ if __name__ == "__main__":
     import pandas as pd
 
     from config import ProjectConfig, UrlGenerator
-    from data_models import EnergyType
 
     config = ProjectConfig()
     url_generator = UrlGenerator()
 
-    electricity_data_extractor = ElectricityDataExtractor()
-    electricity_data = electricity_data_extractor.get_electricity_data(
-        rates_url=url_generator.get_electricity_rates_url(),
-        consumption_url=url_generator.get_electricity_consumption_url(
-            group_by="week", period_from="2023", period_to="2023-12-31"
-        ),
-        api_key=config.octopus_api_key.get_secret_value(),
-        group_by="week",
-    )
+    # electricity_data_extractor = ElectricityDataExtractor()
+    # electricity_data = electricity_data_extractor.get_electricity_data(
+    #     rates_url=url_generator.get_electricity_rates_url(),
+    #     consumption_url=url_generator.get_electricity_consumption_url(
+    #         group_by="week", period_from="2022", period_to="2022-12-31"
+    #     ),
+    #     api_key=config.octopus_api_key.get_secret_value(),
+    # )
 
-    print(electricity_data.consumption)
-    # df = pd.DataFrame(electricity_data.unit_rate)
-    # print(df["unit_rate_inc_vat"].tail(2).diff().tail(1).values)
-    # print(df["unit_rate_inc_vat"].iloc[-2:].diff().iloc[-1:].values)
+    # gas_data_extractor = GasDataExtractor()
+    # gas_data = gas_data_extractor.get_gas_data(
+    #     rates_url=url_generator.get_gas_rates_url(),
+    #     consumption_url=url_generator.get_gas_consumption_url(
+    #         group_by="week", period_from="2022", period_to="2022-12-31"
+    #     ),
+    #     api_key=config.octopus_api_key.get_secret_value(),
+    #     gas_m3_to_kwh_conversion=config.gas_m3_to_kwh_conversion,
+    # )
+
+    # print(electricity_data.unit_rate)
+    # print(gas_data.unit_rate)
+
+    from data_models import ElectricityData, GasData, RatesData
+
+    def get_standard_unit_rates(
+        url: str = url_generator.get_electricity_rates_url(),
+    ) -> List[RatesData]:
+        """Export standard unit rates.
+
+        :param url: url for the API request
+
+        :return: A list of dictionaries
+        """
+        unit_rates: List[RatesData] = []
+        response = requests.get(url)
+        output_dict = response.json()
+
+        for result in output_dict["results"]:
+            unit_rate = {
+                "date": datetime.fromisoformat(result["valid_from"]).strftime(
+                    "%Y-%m-%d"
+                ),
+                "unit_rate_exc_vat": result["value_exc_vat"],
+                "unit_rate_inc_vat": result["value_inc_vat"],
+            }
+            unit_rates.append(RatesData(**unit_rate))
+        unit_rates.sort(key=lambda item: item.date, reverse=False)
+        return unit_rates
+
+    unit_rates = get_standard_unit_rates()
+    # print(unit_rates)
+    print([(item.date, item.unit_rate_inc_vat) for item in unit_rates])
