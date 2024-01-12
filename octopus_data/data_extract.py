@@ -43,7 +43,7 @@ class DailyDataExtractor(_DataExtractor):
         self.unit_rates.sort(key=lambda item: item["date"], reverse=False)
         return self.unit_rates
 
-    def _get_consumption_values(
+    def get_consumption_values(
         self,
         consumption_url: str,
         api_key: str,
