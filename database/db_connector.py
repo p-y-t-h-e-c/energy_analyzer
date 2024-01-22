@@ -1,10 +1,10 @@
 """Database connector module."""
 import datetime
-import logging
 from datetime import date
 from typing import Any
 
-import sqlalchemy as sa
+import pandas as pd
+from prefect import logging
 from sqlalchemy import create_engine, desc, select
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.exc import IntegrityError
@@ -18,31 +18,26 @@ class DbConnector:
 
     def __init__(self, database_url: str, echo: bool = False):
         """Class constructor method."""
-        self._engine = create_engine(
+        self.engine = create_engine(
             database_url,
             echo=echo,
         )
-        self.session = Session(self._engine)
+        self.session = Session(self.engine)
 
-    def upsert_db(self, table: OctopusTables, data: dict[str, Any]) -> None:
-        """Add or update data to/in database.
+    def add_data_to_db(self, data: pd.DataFrame, table_name: str) -> None:
+        """Add data in DataFrame form to respective database table.
 
-        :param table: selected db table
-        :param data: a row of data in dict format to be added te a table
+        Args:
+            data: new data to be added to db table
+            table_name: name of the table to which data to be added
 
-        :return: Nothing, add or update record to/in db
+        Returns:
+            nothing: adds data to database table
         """
-        with self.session as session:
-            stmt = upsert(table).values(data)
-            do_update_stmt = stmt.on_conflict_do_update(
-                constraint=table.db_table().primary_key,
-                set_=dict(data),
-            )
-            try:
-                session.execute(do_update_stmt)
-                session.commit()
-            except IntegrityError as error:
-                logging.error(error)
+        if not data.empty:
+            data.to_sql(table_name, self.engine, if_exists="replace", index=False)
+        else:
+            logging.get_logger().info("No new data to be added to db.")
 
     def get_latest_date(self, table: OctopusTables) -> date:
         """Get latest date from a table.
@@ -68,8 +63,8 @@ class DbConnector:
 
     def reset_database(self) -> None:
         """Reset Database."""
-        Base.metadata.drop_all(self._engine)
-        Base.metadata.create_all(self._engine)
+        Base.metadata.drop_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
 
 if __name__ == "__main__":

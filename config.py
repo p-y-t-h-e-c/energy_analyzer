@@ -98,6 +98,9 @@ class UrlGenerator:
         :return: period_to attribute
         """
         if period_to:
+            period_to = datetime.datetime(
+                year=int(period_to), month=12, day=31
+            ).strftime("%Y-%m-%d")
             return f"&period_to={period_to}"
         else:
             date_to = date.today() + timedelta(days=14)
