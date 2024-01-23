@@ -58,7 +58,7 @@ def get_electricity_rates_data() -> pd.DataFrame:
         electricity_rates_df
     )
 
-    update_point = DB_CONNECTOR.get_latest_date(ElectricityRatesTable)
+    update_point = DB_CONNECTOR.get_latest_row(ElectricityRatesTable)
     data_to_add_to_db = daily_data_handler.select_data_to_add_to_db(
         electricity_rates_formatted, update_point
     )
@@ -93,7 +93,7 @@ def get_gas_rates_data() -> pd.DataFrame:
         gas_rates_df
     )
 
-    update_point = DB_CONNECTOR.get_latest_date(GasRatesTable)
+    update_point = DB_CONNECTOR.get_latest_row(GasRatesTable)
     data_to_add_to_db = daily_data_handler.select_data_to_add_to_db(
         gas_rates_formatted, update_point
     )
@@ -131,7 +131,7 @@ def get_electricity_consumption_data() -> pd.DataFrame:
         electricity_consumption_df
     )
 
-    update_point = DB_CONNECTOR.get_latest_date(ElectricityConsumptionTable)
+    update_point = DB_CONNECTOR.get_latest_row(ElectricityConsumptionTable)
     data_to_add_to_db = daily_data_handler.select_data_to_add_to_db(
         electricity_consumption_formatted, update_point
     )
@@ -169,7 +169,7 @@ def get_gas_consumption_data() -> pd.DataFrame:
         gas_consumption_df, CONFIG.gas_m3_to_kwh_conversion
     )
 
-    update_point = DB_CONNECTOR.get_latest_date(GasConsumptionTable)
+    update_point = DB_CONNECTOR.get_latest_row(GasConsumptionTable)
     data_to_add_to_db = daily_data_handler.select_data_to_add_to_db(
         gas_consumption_formatted, update_point
     )
@@ -209,12 +209,14 @@ def get_electricity_weekly_consumption_data() -> pd.DataFrame:
         )
     )
 
-    # update_point = DB_CONNECTOR.get_latest_date(ElectricityConsumptionTable)
-    # data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
-    #     electricity_consumption_formatted, update_point
-    # )
+    update_point = DB_CONNECTOR.get_latest_row(
+        ElectricityWeeklyConsumptionTable2024, column_name="week"
+    )
+    data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
+        electricity_consumption_weekly_formatted, update_point
+    )
 
-    return electricity_consumption_weekly_formatted
+    return data_to_add_to_db
 
 
 @task(name="Add Octopus electricity weekly consumption data to database")
@@ -249,12 +251,14 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
         weekly_data_handler.format_weekly_consumption_data(gas_consumption_weekly_df)
     )
 
-    # update_point = DB_CONNECTOR.get_latest_date(ElectricityConsumptionTable)
-    # data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
-    #     electricity_consumption_formatted, update_point
-    # )
+    update_point = DB_CONNECTOR.get_latest_row(
+        GasWeeklyConsumptionTable2024, column_name="week"
+    )
+    data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
+        gas_consumption_weekly_formatted, update_point
+    )
 
-    return gas_consumption_weekly_formatted
+    return data_to_add_to_db
 
 
 @task(name="Add Octopus gas weekly consumption data to database")
@@ -330,4 +334,4 @@ def process_octopus_data():
 
 
 if __name__ == "__main__":
-    process_octopus_data.serve(name="Process Octopus Data", interval=3600)
+    process_octopus_data.serve(name="Process Octopus Data", cron="35 * * * *")

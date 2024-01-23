@@ -1,7 +1,7 @@
 """Database connector module."""
 import datetime
 from datetime import date
-from typing import Any
+from typing import Optional
 
 import pandas as pd
 from prefect import logging
@@ -35,31 +35,28 @@ class DbConnector:
             nothing: adds data to database table
         """
         if not data.empty:
-            data.to_sql(table_name, self.engine, if_exists="replace", index=False)
+            data.to_sql(table_name, self.engine, if_exists="append", index=False)
         else:
             logging.get_logger().info("No new data to be added to db.")
 
-    def get_latest_date(self, table: OctopusTables) -> date:
-        """Get latest date from a table.
+    def get_latest_row(
+        self, table: OctopusTables, column_name: str = "date"
+    ) -> date | str:
+        """Get latest row from a specific column.
 
-        :param table: a selected table to get the latest date from
+        Args:
+            table: a selected table to get the data from
+            column_name: a name of the column from which the last row to be retrieved
 
-        :return: the latest date from a table
+        Returns:
+            the latest record of specified table, column
         """
         with self.session as session:
-            if table.db_table().primary_key.columns.values()[0].name == "date":
-                table_column = table.db_table().columns.__getattr__("date")
-                stmt = select(table_column).order_by(desc(table_column)).limit(1)
-                result = session.execute(stmt)
-                session.commit()
-                return result.scalar_one()
-            else:
-                current_year = datetime.date.today().year
-                from_date = f"{current_year}-01-01"
-                datetime_object = datetime.datetime.strptime(
-                    from_date, "%Y-%m-%d"
-                ).date()
-                return datetime_object
+            table_column = table.db_table().columns.__getattr__(column_name)
+            stmt = select(table_column).order_by(desc(table_column)).limit(1)
+            result = session.execute(stmt)
+            session.commit()
+            return result.scalar_one()
 
     def reset_database(self) -> None:
         """Reset Database."""
@@ -72,7 +69,7 @@ if __name__ == "__main__":
     from database.db_models import (
         Base,
         ElectricityRatesTable,
-        ElectricityWeeklyConsumptionTable2022,
+        ElectricityWeeklyConsumptionTable2024,
     )
 
     config = ProjectConfig()
@@ -87,6 +84,11 @@ if __name__ == "__main__":
 
     # print(db_connector.get_latest_date(ElectricityWeeklyConsumptionTable2022))
 
-    db_connector.reset_database()
+    # db_connector.reset_database()
 
-    # db_connector.upsert_db(ElectricityRatesTable, data)
+    print(db_connector.get_latest_row(ElectricityRatesTable))
+    print(
+        db_connector.get_latest_row(
+            ElectricityWeeklyConsumptionTable2024, column_name="week"
+        )
+    )

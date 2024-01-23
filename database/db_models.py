@@ -113,8 +113,10 @@ OctopusTables = Union[
     Type[GasConsumptionTable],
     Type[ElectricityWeeklyConsumptionTable2022],
     Type[ElectricityWeeklyConsumptionTable2023],
+    Type[ElectricityWeeklyConsumptionTable2024],
     Type[GasWeeklyConsumptionTable2022],
     Type[GasWeeklyConsumptionTable2023],
+    Type[GasWeeklyConsumptionTable2024],
 ]
 
 

@@ -23,6 +23,23 @@ class _DataHandler:
         df = pd.DataFrame(data)
         return df
 
+    @classmethod
+    def select_data_to_add_to_db(
+        cls, data: pd.DataFrame, update_point: date | str
+    ) -> pd.DataFrame:
+        """Select data to be uploaded based on the latest uploaded data.
+
+        Args:
+            data: data fetched via API call in DataFrame format
+            update_point: the latest date or week withing respective table
+
+        Returns:
+            new_data: only new data to be added to db
+        """
+        # print(data.iloc[:, 0])
+        new_data = data[(data.iloc[:, 0] > update_point)]
+        return new_data
+
 
 class DailyDataHandler(_DataHandler):
     """Daily data extractor class."""
@@ -78,22 +95,6 @@ class DailyDataHandler(_DataHandler):
         consumption_data.sort_values(by=["date"], inplace=True)
 
         return consumption_data
-
-    def select_data_to_add_to_db(
-        self, data: pd.DataFrame, update_point: date
-    ) -> pd.DataFrame:
-        """Select data to be uploaded based on the latest uploaded data.
-
-        Args:
-            data: data fetched via API call in DataFrame format
-            update_point: the latest date or week withing respective table
-
-        Returns:
-            new_data: only new data to be added to db
-        """
-        # print(data.iloc[:, 0])
-        new_data = data[(data.iloc[:, 0] > update_point)]
-        return new_data
 
 
 class WeeklyDataHandler(_DataHandler):
