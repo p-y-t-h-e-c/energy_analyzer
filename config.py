@@ -78,14 +78,15 @@ class UrlGenerator:
         :return: period_from attribute
         """
         if period_from:
+            # the first Monday of the year
             mon_date = datetime.datetime.strptime(period_from + "1" + "1", "%Y%W%w")
             # print(mon_date.date())
             return f"period_from={mon_date}"
         else:
-            db_url = CONFIG.db_url
-            db_connector = DbConnector(db_url.get_secret_value())
+            db_url = CONFIG.db_url.get_secret_value()
+            db_connector = DbConnector(db_url)
             try:
-                date_from = db_connector.get_latest_date(table) - timedelta(days=30)
+                date_from = db_connector.get_latest_row(table) - timedelta(days=30)
                 return f"period_from={date_from}"
             except NoResultFound:
                 return "period_from=2022-07-01"
@@ -194,12 +195,10 @@ class UrlGenerator:
 
 
 if __name__ == "__main__":
-    print(ProjectConfig().model_dump())
-    # # print(period_to())
-    # # print(period_from(ElectricityRatesTable))
-    # # print(get_rates_url(EnergyType.ELECTRICITY))
-    # url_generator = UrlGenerator()
+    # print(ProjectConfig().model_dump())
+
+    url_generator = UrlGenerator()
     # # print(url_generator.get_electricity_consumption_url())
     # # print(url_generator._get_group_by())
-    # url_generator._get_period_from(ElectricityConsumptionTable, period_from="2022")
+    print(url_generator._get_period_from(ElectricityConsumptionTable))
     # print(url_generator.get_electricity_rates_url())

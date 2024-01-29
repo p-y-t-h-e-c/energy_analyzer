@@ -209,14 +209,7 @@ def get_electricity_weekly_consumption_data() -> pd.DataFrame:
         )
     )
 
-    update_point = DB_CONNECTOR.get_latest_row(
-        ElectricityWeeklyConsumptionTable2024, column_name="week"
-    )
-    data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
-        electricity_consumption_weekly_formatted, update_point
-    )
-
-    return data_to_add_to_db
+    return electricity_consumption_weekly_formatted
 
 
 @task(name="Add Octopus electricity weekly consumption data to database")
@@ -227,7 +220,9 @@ def add_electricity_weekly_consumption_data_to_db(data: pd.DataFrame) -> None:
         data: electricity weekly consumption data in the form of DataFrame
     """
     DB_CONNECTOR.add_data_to_db(
-        data, table_name=ElectricityWeeklyConsumptionTable2024.__tablename__
+        data,
+        table_name=ElectricityWeeklyConsumptionTable2024.__tablename__,
+        if_exists="replace",
     )
 
 
@@ -251,14 +246,7 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
         weekly_data_handler.format_weekly_consumption_data(gas_consumption_weekly_df)
     )
 
-    update_point = DB_CONNECTOR.get_latest_row(
-        GasWeeklyConsumptionTable2024, column_name="week"
-    )
-    data_to_add_to_db = weekly_data_handler.select_data_to_add_to_db(
-        gas_consumption_weekly_formatted, update_point
-    )
-
-    return data_to_add_to_db
+    return gas_consumption_weekly_formatted
 
 
 @task(name="Add Octopus gas weekly consumption data to database")
@@ -269,7 +257,9 @@ def add_gas_weekly_consumption_data_to_db(data: pd.DataFrame) -> None:
         data: gas weekly consumption data in the form of DataFrame
     """
     DB_CONNECTOR.add_data_to_db(
-        data, table_name=GasWeeklyConsumptionTable2024.__tablename__
+        data,
+        table_name=GasWeeklyConsumptionTable2024.__tablename__,
+        if_exists="replace",
     )
 
 

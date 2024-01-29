@@ -1,7 +1,7 @@
 """Database connector module."""
 import datetime
 from datetime import date
-from typing import Optional
+from typing import Literal, Optional
 
 import pandas as pd
 from prefect import logging
@@ -24,7 +24,12 @@ class DbConnector:
         )
         self.session = Session(self.engine)
 
-    def add_data_to_db(self, data: pd.DataFrame, table_name: str) -> None:
+    def add_data_to_db(
+        self,
+        data: pd.DataFrame,
+        table_name: str,
+        if_exists: Literal["fail", "replace", "append"] = "append",
+    ) -> None:
         """Add data in DataFrame form to respective database table.
 
         Args:
@@ -35,13 +40,11 @@ class DbConnector:
             nothing: adds data to database table
         """
         if not data.empty:
-            data.to_sql(table_name, self.engine, if_exists="append", index=False)
+            data.to_sql(table_name, self.engine, if_exists=if_exists, index=False)
         else:
             logging.get_logger().info("No new data to be added to db.")
 
-    def get_latest_row(
-        self, table: OctopusTables, column_name: str = "date"
-    ) -> date | str:
+    def get_latest_row(self, table: OctopusTables, column_name: str = "date") -> date:
         """Get latest row from a specific column.
 
         Args:
