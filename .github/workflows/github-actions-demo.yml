@@ -26,6 +26,8 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: energy_analyzer
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: latest, ${{ github.run_number }}
