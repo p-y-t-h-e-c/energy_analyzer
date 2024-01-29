@@ -28,4 +28,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:latest
+          tags: ${{ steps.meta.outputs.tags }}
