@@ -42,7 +42,7 @@ class DataExtractor:
 
 
 if __name__ == "__main__":
-    from config import ProjectConfig, UrlGenerator
+    from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
 
     config = ProjectConfig()
     url_generator = UrlGenerator()

@@ -14,7 +14,6 @@ from database.db_models import (
     GasConsumptionTable,
     GasRatesTable,
 )
-from utils import assert_never
 
 
 class ProjectConfig(BaseSettings):

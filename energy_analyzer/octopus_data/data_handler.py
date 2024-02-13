@@ -1,7 +1,6 @@
 """Data extractor module."""
-from abc import ABC
 from datetime import date, datetime
-from typing import Any, List, Optional
+from typing import Any, List
 
 import pandas as pd
 from dateutil.parser import parse
@@ -122,7 +121,7 @@ class WeeklyDataHandler(_DataHandler):
 
 
 if __name__ == "__main__":
-    from config import ProjectConfig, UrlGenerator
+    from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
 
     config = ProjectConfig()
     url_generator = UrlGenerator()

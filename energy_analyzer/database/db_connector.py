@@ -1,16 +1,12 @@
 """Database connector module."""
-import datetime
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 import pandas as pd
+from database.db_models import OctopusTables
 from prefect import logging
 from sqlalchemy import create_engine, desc, select
-from sqlalchemy.dialects.postgresql import insert as upsert
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-
-from database.db_models import OctopusTables
 
 
 class DbConnector:
@@ -68,12 +64,13 @@ class DbConnector:
 
 
 if __name__ == "__main__":
-    from config import ProjectConfig
     from database.db_models import (
         Base,
         ElectricityRatesTable,
         ElectricityWeeklyConsumptionTable2024,
     )
+
+    from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
 

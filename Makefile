@@ -52,6 +52,11 @@ pipx:
 	@python3 -m pip install --user -U pipx
 	@python3 -m pipx ensurepath
 
+
+.PHONY: venv
+venv:
+	. .venv/bin/activate
+
 # Pipx dependecies variable
 PIPX_DEPENDENCIES := poetry
 

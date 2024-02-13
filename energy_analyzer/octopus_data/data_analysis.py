@@ -1,8 +1,7 @@
 """Energy rates analyzer."""
-import numpy as np
 import pandas as pd
 
-from data_models import ElectricityData, GasData
+from energy_analyzer.utils.data_models import ElectricityData, GasData
 
 
 class EnergyAnalyzer:
@@ -45,8 +44,9 @@ class EnergyAnalyzer:
 # ("{:.4f}".format(value_analysis), "{:.1f}".format(percentage_analysis) + "%")
 
 if __name__ == "__main__":
-    from config import ProjectConfig, UrlGenerator
     from octopus_data.data_extract import ElectricityDataExtractor
+
+    from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
 
     config = ProjectConfig()
     url_generator = UrlGenerator()
