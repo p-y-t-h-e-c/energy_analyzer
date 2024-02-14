@@ -3,8 +3,8 @@ from datetime import date
 from typing import Literal
 
 import pandas as pd
-from database.db_models import OctopusTables
-from prefect import logging
+from energy_analyzer.database.db_models import OctopusTables
+import logging
 from sqlalchemy import create_engine, desc, select
 from sqlalchemy.orm import Session
 
@@ -38,7 +38,7 @@ class DbConnector:
         if not data.empty:
             data.to_sql(table_name, self.engine, if_exists=if_exists, index=False)
         else:
-            logging.get_logger().info("No new data to be added to db.")
+            logging.info("No new data to be added to db.")
 
     def get_latest_row(self, table: OctopusTables, column_name: str = "date") -> date:
         """Get latest row from a specific column.

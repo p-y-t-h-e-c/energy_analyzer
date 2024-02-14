@@ -1,9 +1,10 @@
 """Data extractor module."""
-from datetime import date, datetime
+from datetime import date
 from typing import Any, List
 
 import pandas as pd
 from dateutil.parser import parse
+from dateutil import parser
 
 
 class _DataHandler:
@@ -61,7 +62,7 @@ class DailyDataHandler(_DataHandler):
             inplace=True,
         )
         standard_unit_rates_data["date"] = standard_unit_rates_data["date"].apply(
-            lambda x: parse(datetime.fromisoformat(x).strftime("%Y-%m-%d"))
+            lambda x: parse(parser.isoparse(x).strftime("%Y-%m-%d"))
         )
         standard_unit_rates_data.sort_values(by=["date"], inplace=True)
 
@@ -86,7 +87,7 @@ class DailyDataHandler(_DataHandler):
             inplace=True,
         )
         consumption_data["date"] = consumption_data["date"].apply(
-            lambda x: parse(datetime.fromisoformat(x).strftime("%Y-%m-%d"))
+            lambda x: parse(parser.isoparse(x).strftime("%Y-%m-%d"))
         )
         consumption_data["consumption"] = consumption_data["consumption"].multiply(
             gas_m3_to_kwh_conversion
@@ -109,7 +110,7 @@ class WeeklyDataHandler(_DataHandler):
             inplace=True,
         )
         weekly_consumption_data["week"] = weekly_consumption_data["week"].apply(
-            lambda x: datetime.fromisoformat(x).strftime("%V")
+            lambda x: parser.isoparse(x).strftime("%V")
         )
 
         weekly_consumption_data["consumption"] = weekly_consumption_data[

@@ -7,8 +7,8 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.exc import NoResultFound
 
-from database.db_connector import DbConnector
-from database.db_models import (
+from energy_analyzer.database.db_connector import DbConnector
+from energy_analyzer.database.db_models import (
     ElectricityConsumptionTable,
     ElectricityRatesTable,
     GasConsumptionTable,
