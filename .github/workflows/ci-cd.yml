@@ -26,8 +26,8 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./.github/workflows
-          file: ./.github/workflows/Dockerfile
+          context: ./dockerfile_cicd/
+          file: ./dockerfile_cicd/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/app:latest
 
