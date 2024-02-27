@@ -28,7 +28,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY .env /opt/dagster/app/
+# COPY .env /opt/dagster/app/
 COPY energy_analyzer ./energy_analyzer
 
 # Run dagster gRPC server on port 4000
