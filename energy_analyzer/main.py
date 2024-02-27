@@ -73,6 +73,7 @@ def add_electricity_rates_data_to_db(
     Args:
         data: electricity standard unit rates data in the form of DataFrame
     """
+    LOGGER.info("Adding electricity rates data to database.")
     DB_CONNECTOR.add_data_to_db(
         Get_Octopus_Electricity_Rates_Data,
         table_name=ElectricityRatesTable.__tablename__,

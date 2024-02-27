@@ -52,6 +52,10 @@ class ProjectConfig(BaseSettings):
     pushstaq_api_url: str = "https://www.pushstaq.com/api/push/"
     pushstaq_api_key: SecretStr = Field(default=None, alias="PUSHSTAQ_API_KEY")
 
+    POSTGRES_USER: str = "postgres_user"
+    POSTGRES_PASSWORD: str = "postgres_password"
+    POSTGRES_DB: str = "postgres_db"
+
 
 # {'tariff_code': 'E-1R-VAR-22-04-02-B', 'valid_from': '2022-08-01T00:00:00+01:00', 'valid_to': '2023-02-13T00:00:00Z'}
 # {'tariff_code': 'E-1R-SILVER-FLEX-22-11-25-B', 'valid_from': '2023-02-13T00:00:00Z', 'valid_to': None}
