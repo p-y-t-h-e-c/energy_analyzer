@@ -75,6 +75,6 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           envs: APPTOKEN,USERNAME
           script: |
-            echo $APPTOKEN | docker login ghcr.io -u $USERNAME --password-stdin
+            echo $APPTOKEN | docker login -u $USERNAME --password-stdin
             cd ~/.deploy/${{ github.event.repository.name }}
             docker-compose up
