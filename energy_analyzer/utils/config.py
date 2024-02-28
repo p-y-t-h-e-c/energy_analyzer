@@ -19,9 +19,7 @@ from energy_analyzer.database.db_models import (
 class ProjectConfig(BaseSettings):
     """Project config class."""
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="", case_sensitive=False
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # Solis Info
     solis_api_url: str = "https://www.soliscloud.com:13333/"
@@ -198,10 +196,10 @@ class UrlGenerator:
 
 
 if __name__ == "__main__":
-    # print(ProjectConfig().model_dump())
+    print(ProjectConfig().model_dump())
 
-    url_generator = UrlGenerator()
+    # url_generator = UrlGenerator()
     # # print(url_generator.get_electricity_consumption_url())
     # # print(url_generator._get_group_by())
-    print(url_generator._get_period_from(ElectricityConsumptionTable))
+    # print(url_generator._get_period_from(ElectricityConsumptionTable))
     # print(url_generator.get_electricity_rates_url())
