@@ -4,6 +4,7 @@ FROM python:3.10-slim
 # and also both dagster-webserver and the dagster-daemon.
 # Does not need to have access to any pipeline code.
 
+RUN pip install --upgrade pip
 RUN pip install \
     dagster \
     dagster-graphql \
@@ -25,10 +26,8 @@ COPY dagster.yaml workspace.yaml $DAGSTER_HOME
 WORKDIR /opt/dagster/app
 
 COPY requirements.txt .
-RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY .env /opt/dagster/app/
 COPY energy_analyzer ./energy_analyzer
 
 # Run dagster gRPC server on port 4000
