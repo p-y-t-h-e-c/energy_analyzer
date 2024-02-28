@@ -36,13 +36,13 @@ class ProjectConfig(BaseSettings):
 
     # Electricity Info
     e_tariff_code: str = "E-1R-SILVER-FLEX-22-11-25-B"
-    e_MPAN: SecretStr = Field(default=None, alias="electricity_MPAN")
-    e_serial_no: SecretStr = Field(default=None, alias="electricity_serial_no")
+    e_MPAN: SecretStr = Field(default=None, alias="ELECTRICITY_MPAN")
+    e_serial_no: SecretStr = Field(default=None, alias="ELECTRICITY_SERIAL_NO")
 
     # Gas Info
     g_tariff_code: str = "G-1R-SILVER-FLEX-22-11-25-B"
-    g_MPRN: SecretStr = Field(default=None, alias="gas_MPRN")
-    g_serial_no: SecretStr = Field(default=None, alias="gas_serial_no")
+    g_MPRN: SecretStr = Field(default=None, alias="GAS_MPRN")
+    g_serial_no: SecretStr = Field(default=None, alias="GAS_SERIAL_NO")
     gas_m3_to_kwh_conversion: float = 1.02264 * 39.5 / 3.6
 
     # Database
