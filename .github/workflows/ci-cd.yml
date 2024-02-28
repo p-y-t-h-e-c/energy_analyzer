@@ -51,7 +51,8 @@ jobs:
           echo "GAS_SERIAL_NO: ${{ secrets.GAS_SERIAL_NO }}" >> .env
           echo "DATABASE_URL: ${{ secrets.DATABASE_URL }}" >> .env
           echo "PUSHSTAQ_API_KEY: ${{ secrets.PUSHSTAQ_API_KEY}}" >> .env
-          Copy docker-compose and .env files to target server
+
+      # Copy docker-compose.yaml and .env files to target server
       - name: copy files to target server via scp
         uses: appleboy/scp-action@v0.1.7
         with:
