@@ -20,7 +20,7 @@ services:
   # its own port, and have its own entry in the workspace.yaml file that's loaded by the
       # webserver.
   energy_analyzer_docker_code_base:
-    image: pythec/app:latest
+    image: pythec/energy_analyzer:latest
     container_name: energy_analyzer_docker_code_base
     restart: always
     environment:
@@ -52,7 +52,7 @@ services:
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
   # a queue and later dequeued and launched by dagster-daemon.
   energy_analyzer_docker_webserver:
-    image: pythec/app:latest
+    image: pythec/energy_analyzer:latest
     entrypoint:
       - dagster-webserver
       - -h
@@ -82,7 +82,7 @@ services:
   # This service runs the dagster-daemon process, which is responsible for taking runs
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
   energy_analyzer_docker_daemon:
-    image: pythec/app:latest
+    image: pythec/energy_analyzer:latest
     entrypoint:
       - dagster-daemon
       - run
