@@ -10,10 +10,20 @@ run_launcher:
   module: dagster_docker
   class: DockerRunLauncher
   config:
-    env_vars:
+    env_vars: # all environment variables required to run the Dagster pipeline
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
+      - OCTOPUS_ACCOUNT_NO
+      - OCTOPUS_API_KEY
+      - SOLIS_KEY_ID
+      - SOLIS_KEY_SECRET
+      - ELECTRICITY_MPAN
+      - ELECTRICITY_SERIAL_NO
+      - GAS_MPRN
+      - GAS_SERIAL_NO
+      - DATABASE_URL
+      - PUSHSTAQ_API_KEY
     network: energy_analyzer_docker_network
     container_kwargs:
       volumes: # Make docker client accessible to any launched containers as well

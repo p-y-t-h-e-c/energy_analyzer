@@ -30,6 +30,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
       DAGSTER_CURRENT_IMAGE: "energy_analyzer_docker_code_base_image"
     networks:
       - energy_analyzer_docker_network
@@ -58,6 +68,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
     volumes: # Make docker client accessible so we can terminate containers from the webserver
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/io_manager_storage:/tmp/io_manager_storage
@@ -82,6 +102,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
     volumes: # Make docker client accessible so we can launch containers using host docker
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/io_manager_storage:/tmp/io_manager_storage
