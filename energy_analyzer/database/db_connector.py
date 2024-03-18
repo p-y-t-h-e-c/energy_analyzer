@@ -1,12 +1,13 @@
 """Database connector module."""
+import logging
 from datetime import date
 from typing import Literal
 
 import pandas as pd
-from energy_analyzer.database.db_models import OctopusTables
-import logging
 from sqlalchemy import create_engine, desc, select
 from sqlalchemy.orm import Session
+
+from energy_analyzer.database.db_models import OctopusTables
 
 
 class DbConnector:

@@ -3,8 +3,8 @@ from datetime import date
 from typing import Any, List
 
 import pandas as pd
-from dateutil.parser import parse
 from dateutil import parser
+from dateutil.parser import parse
 
 
 class _DataHandler:
