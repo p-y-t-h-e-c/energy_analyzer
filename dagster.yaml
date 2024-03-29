@@ -20,6 +20,7 @@ run_launcher:
       - SOLIS_KEY_SECRET
       - ELECTRICITY_MPAN
       - ELECTRICITY_SERIAL_NO
+      - ELECTRICITY_EXPORT_MPAN
       - GAS_MPRN
       - GAS_SERIAL_NO
       - DATABASE_URL
