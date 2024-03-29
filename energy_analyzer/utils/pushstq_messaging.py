@@ -2,7 +2,7 @@
 
 import requests
 
-from config import ProjectConfig
+from energy_analyzer.utils.config import ProjectConfig
 
 config = ProjectConfig()
 

@@ -1,4 +1,5 @@
 """Database models."""
+
 from typing import Type, Union
 
 from sqlalchemy import Date, Float, String, Table
@@ -43,6 +44,15 @@ class ElectricityConsumptionTable(Base):
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
+class ElectricityExportTable(Base):
+    """Electricity export table."""
+
+    __tablename__ = "electricity_export"
+
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
+    export_value: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
 class GasConsumptionTable(Base):
     """Gas consumption table."""
 
@@ -70,6 +80,15 @@ class ElectricityWeeklyConsumptionTable2023(Base):
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
+class ElectricityWeeklyConsumptionTable2024(Base):
+    """Electricity consumption table."""
+
+    __tablename__ = "electricity_weekly_consumption_2024"
+
+    week: Mapped[str] = mapped_column(String, primary_key=True)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
 class GasWeeklyConsumptionTable2022(Base):
     """Gas consumption table."""
 
@@ -88,6 +107,15 @@ class GasWeeklyConsumptionTable2023(Base):
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
+class GasWeeklyConsumptionTable2024(Base):
+    """Gas consumption table."""
+
+    __tablename__ = "gas_weekly_consumption_2024"
+
+    week: Mapped[str] = mapped_column(String, primary_key=True)
+    consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
 OctopusTables = Union[
     Type[ElectricityRatesTable],
     Type[ElectricityConsumptionTable],
@@ -95,6 +123,12 @@ OctopusTables = Union[
     Type[GasConsumptionTable],
     Type[ElectricityWeeklyConsumptionTable2022],
     Type[ElectricityWeeklyConsumptionTable2023],
+    Type[ElectricityWeeklyConsumptionTable2024],
     Type[GasWeeklyConsumptionTable2022],
     Type[GasWeeklyConsumptionTable2023],
+    Type[GasWeeklyConsumptionTable2024],
 ]
+
+
+if __name__ == "__main__":
+    print(ElectricityRatesTable.__tablename__)

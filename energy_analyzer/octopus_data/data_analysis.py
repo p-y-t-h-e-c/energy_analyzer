@@ -1,20 +1,21 @@
 """Energy rates analyzer."""
-import numpy as np
-import pandas as pd
 
-from data_models import ElectricityData, GasData
+from typing import Any, List
+
+import pandas as pd
 
 
 class EnergyAnalyzer:
     """Energy Analyzer class."""
 
-    def __init__(self, energy_data: ElectricityData | GasData) -> None:
+    def __init__(self, data: List[dict[str, Any]]) -> None:
         """Class initiator method."""
-        self.energy_data = energy_data
+        self.data = data
 
     def energy_data_to_df(self) -> pd.DataFrame:
         """Transform energy data into DataFrame."""
-        df = pd.DataFrame(self.energy_data.unit_rate)
+        df = pd.DataFrame(self.data)
+        print(df)
         return df
 
     def get_last_value(self) -> float:
@@ -45,20 +46,25 @@ class EnergyAnalyzer:
 # ("{:.4f}".format(value_analysis), "{:.1f}".format(percentage_analysis) + "%")
 
 if __name__ == "__main__":
-    from config import ProjectConfig, UrlGenerator
-    from octopus_data.data_extract import ElectricityDataExtractor
+    from data_extract import DataExtractor
+
+    from energy_analyzer.octopus_data.url_generator import UrlGenerator
+    from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
     url_generator = UrlGenerator()
 
-    electricity_data_extractor = ElectricityDataExtractor()
-    electricity_data = electricity_data_extractor.get_electricity_data(
-        rates_url=url_generator.get_electricity_rates_url(),
+    data_extractor = DataExtractor()
+
+    electricity_unit_rates_data = data_extractor.get_standard_unit_rates(
+        rates_url=url_generator.get_electricity_rates_url()
+    )
+    electricity_consumption_data = data_extractor.get_consumption_values(
         consumption_url=url_generator.get_electricity_consumption_url(),
         api_key=config.octopus_api_key.get_secret_value(),
     )
 
     # print(electricity_data.unit_rate)
-    energy_analyzer = EnergyAnalyzer(electricity_data)
+    energy_analyzer = EnergyAnalyzer(electricity_unit_rates_data)
     print(type(energy_analyzer.get_last_value()))
     print(energy_analyzer.energy_rates_percentage_analysis())
