@@ -1,0 +1,120 @@
+version: "3.7"
+
+services:
+  # This service runs the postgres DB used by dagster for run storage, schedule storage,
+  # and event log storage.
+  docker_postgresql_db:
+    image: postgres:11
+    container_name: docker_postgresql_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - energy_analyzer_docker_network
+
+  # This service runs the gRPC server that loads your user code, in both dagster-webserver
+  # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
+  # run launcher to use this same image when launching runs in a new container as well.
+  # Multiple containers like this can be deployed separately - each just needs to run on
+  # its own port, and have its own entry in the workspace.yaml file that's loaded by the
+      # webserver.
+  energy_analyzer_docker_code_base:
+    image: pythec/energy_analyzer:latest
+    container_name: energy_analyzer_docker_code_base
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
+      DAGSTER_CURRENT_IMAGE: "pythec/energy_analyzer:latest"
+    networks:
+      - energy_analyzer_docker_network
+
+  # This service runs dagster-webserver, which loads your user code from the user code container.
+  # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
+  # a queue and later dequeued and launched by dagster-daemon.
+  energy_analyzer_docker_webserver:
+    image: pythec/energy_analyzer:latest
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3000"
+      - -w
+      - workspace.yaml
+    container_name: energy_analyzer_docker_webserver
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
+    volumes: # Make docker client accessible so we can terminate containers from the webserver
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      - energy_analyzer_docker_network
+    depends_on:
+      - docker_postgresql_db
+      - energy_analyzer_docker_code_base
+
+  # This service runs the dagster-daemon process, which is responsible for taking runs
+  # off of the queue and launching them, as well as creating runs from schedules or sensors.
+  energy_analyzer_docker_daemon:
+    image: pythec/energy_analyzer:latest
+    entrypoint:
+      - dagster-daemon
+      - run
+    container_name: energy_analyzer_docker_daemon
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      OCTOPUS_ACCOUNT_NO: ${OCTOPUS_ACCOUNT_NO}
+      OCTOPUS_API_KEY: ${OCTOPUS_API_KEY}
+      SOLIS_KEY_ID: ${SOLIS_KEY_ID}
+      SOLIS_KEY_SECRET: ${SOLIS_KEY_SECRET}
+      ELECTRICITY_MPAN: ${ELECTRICITY_MPAN}
+      ELECTRICITY_SERIAL_NO: ${ELECTRICITY_SERIAL_NO}
+      GAS_MPRN: ${GAS_MPRN}
+      GAS_SERIAL_NO: ${GAS_SERIAL_NO}
+      DATABASE_URL: ${DATABASE_URL}
+      PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
+    volumes: # Make docker client accessible so we can launch containers using host docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      - energy_analyzer_docker_network
+    depends_on:
+      - docker_postgresql_db
+      - energy_analyzer_docker_code_base
+
+networks:
+  energy_analyzer_docker_network:
+    driver: bridge
+    name: energy_analyzer_docker_network

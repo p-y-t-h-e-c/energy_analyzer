@@ -1,0 +1,73 @@
+scheduler:
+  module: dagster.core.scheduler
+  class: DagsterDaemonScheduler
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+
+run_launcher:
+  module: dagster_docker
+  class: DockerRunLauncher
+  config:
+    env_vars: # all environment variables required to run the Dagster pipeline
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - OCTOPUS_ACCOUNT_NO
+      - OCTOPUS_API_KEY
+      - SOLIS_KEY_ID
+      - SOLIS_KEY_SECRET
+      - ELECTRICITY_MPAN
+      - ELECTRICITY_SERIAL_NO
+      - GAS_MPRN
+      - GAS_SERIAL_NO
+      - DATABASE_URL
+      - PUSHSTAQ_API_KEY
+    network: energy_analyzer_docker_network
+    container_kwargs:
+      volumes: # Make docker client accessible to any launched containers as well
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /tmp/io_manager_storage:/tmp/io_manager_storage
+
+run_storage:
+  module: dagster_postgres.run_storage
+  class: PostgresRunStorage
+  config:
+    postgres_db:
+      hostname: docker_postgresql_db
+      username:
+        env: POSTGRES_USER
+      password:
+        env: POSTGRES_PASSWORD
+      db_name:
+        env: POSTGRES_DB
+      port: 5432
+
+schedule_storage:
+  module: dagster_postgres.schedule_storage
+  class: PostgresScheduleStorage
+  config:
+    postgres_db:
+      hostname: docker_postgresql_db
+      username:
+        env: POSTGRES_USER
+      password:
+        env: POSTGRES_PASSWORD
+      db_name:
+        env: POSTGRES_DB
+      port: 5432
+
+event_log_storage:
+  module: dagster_postgres.event_log
+  class: PostgresEventLogStorage
+  config:
+    postgres_db:
+      hostname: docker_postgresql_db
+      username:
+        env: POSTGRES_USER
+      password:
+        env: POSTGRES_PASSWORD
+      db_name:
+        env: POSTGRES_DB
+      port: 5432

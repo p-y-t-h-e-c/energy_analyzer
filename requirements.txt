@@ -1,5 +1,6 @@
-pydantic
 pydantic-settings
-python-dotenv
+sqlalchemy
+psycopg2-binary
+requests
 pandas
-SQLAlchemy
+pyarrow
