@@ -1,4 +1,5 @@
 """Database connector module."""
+
 import logging
 from datetime import date
 from typing import Literal
@@ -65,12 +66,11 @@ class DbConnector:
 
 
 if __name__ == "__main__":
-    from database.db_models import (
+    from energy_analyzer.database.db_models import (
         Base,
         ElectricityRatesTable,
         ElectricityWeeklyConsumptionTable2024,
     )
-
     from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     # db_connector.reset_database()
 
     print(db_connector.get_latest_row(ElectricityRatesTable))
-    print(
-        db_connector.get_latest_row(
-            ElectricityWeeklyConsumptionTable2024, column_name="week"
-        )
-    )
+    # print(
+    #     db_connector.get_latest_row(
+    #         ElectricityWeeklyConsumptionTable2024, column_name="week"
+    #     )
+    # )

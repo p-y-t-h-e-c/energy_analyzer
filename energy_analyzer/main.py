@@ -1,6 +1,6 @@
 """Main module."""
+
 import pandas as pd
-import requests
 from dagster import asset, get_dagster_logger
 
 from energy_analyzer.database.db_connector import DbConnector
@@ -17,25 +17,13 @@ from energy_analyzer.octopus_data.data_handler import (
     DailyDataHandler,
     WeeklyDataHandler,
 )
-from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
+from energy_analyzer.octopus_data.url_generator import UrlGenerator
+from energy_analyzer.utils.config import ProjectConfig
 
 CONFIG = ProjectConfig()
 URL_GENERATOR = UrlGenerator()
 DB_CONNECTOR = DbConnector(CONFIG.db_url.get_secret_value())
 LOGGER = get_dagster_logger()
-
-url = "https://api.octopus.energy/v1/products"
-r = requests.get(url, auth=(CONFIG.octopus_api_key.get_secret_value(), ""))
-output_dict = r.json()
-# print(output_dict)
-
-
-def get_account_info():
-    """Get Octopus account info."""
-    url = "https://api.octopus.energy/v1/accounts/" + CONFIG.account.get_secret_value()
-    r = requests.get(url, auth=(CONFIG.octopus_api_key.get_secret_value(), ""))
-    output_dict = r.json()
-    return output_dict["properties"]
 
 
 @asset(name="Get_Octopus_Electricity_Rates_Data")
@@ -45,7 +33,7 @@ def get_electricity_rates_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     electricity_raw = data_extractor.get_standard_unit_rates(
-        url=URL_GENERATOR.get_electricity_rates_url(period_from="2022")
+        rates_url=URL_GENERATOR.get_electricity_rates_url()
     )
 
     daily_data_handler = DailyDataHandler()
@@ -86,7 +74,7 @@ def get_gas_rates_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     gas_raw = data_extractor.get_standard_unit_rates(
-        url=URL_GENERATOR.get_gas_rates_url(period_from="2022")
+        rates_url=URL_GENERATOR.get_gas_rates_url()
     )
 
     daily_data_handler = DailyDataHandler()
@@ -126,7 +114,7 @@ def get_electricity_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     electricity_consumption_raw = data_extractor.get_consumption_values(
-        url=URL_GENERATOR.get_electricity_consumption_url(period_from="2022"),
+        consumption_url=URL_GENERATOR.get_electricity_consumption_url(year_from="2022"),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
 
@@ -172,7 +160,7 @@ def get_gas_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     gas_consumption_raw = data_extractor.get_consumption_values(
-        url=URL_GENERATOR.get_gas_consumption_url(period_from="2022"),
+        consumption_url=URL_GENERATOR.get_gas_consumption_url(year_from="2022"),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
 
@@ -216,8 +204,8 @@ def get_electricity_weekly_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     electricity_consumption_weekly_raw = data_extractor.get_consumption_values(
-        url=URL_GENERATOR.get_electricity_consumption_url(
-            group_by="week", period_from="2024", period_to="2024"
+        consumption_url=URL_GENERATOR.get_electricity_consumption_url(
+            group_by="week", year_from="2024", year_to=2024
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
@@ -260,8 +248,8 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     gas_consumption_weekly_raw = data_extractor.get_consumption_values(
-        url=URL_GENERATOR.get_gas_consumption_url(
-            group_by="week", period_from="2024", period_to="2024"
+        consumption_url=URL_GENERATOR.get_gas_consumption_url(
+            group_by="week", year_from="2024", year_to=2024
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )

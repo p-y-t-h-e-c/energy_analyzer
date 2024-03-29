@@ -1,4 +1,5 @@
 """Database models."""
+
 from typing import Type, Union
 
 from sqlalchemy import Date, Float, String, Table
@@ -41,6 +42,15 @@ class ElectricityConsumptionTable(Base):
 
     date: Mapped[Date] = mapped_column(Date, primary_key=True)
     consumption: Mapped[Float] = mapped_column(Float, nullable=False)
+
+
+class ElectricityExportTable(Base):
+    """Electricity export table."""
+
+    __tablename__ = "electricity_export"
+
+    date: Mapped[Date] = mapped_column(Date, primary_key=True)
+    export_value: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
 class GasConsumptionTable(Base):

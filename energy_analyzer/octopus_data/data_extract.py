@@ -1,4 +1,5 @@
 """Data extractor module."""
+
 from typing import Any, List
 
 import requests
@@ -7,7 +8,7 @@ import requests
 class DataExtractor:
     """Data extractor class."""
 
-    def get_standard_unit_rates(self, url: str) -> List[dict[str, Any]]:
+    def get_standard_unit_rates(self, rates_url: str) -> List[dict[str, Any]]:
         """Export standard unit rates.
 
         Args:
@@ -17,13 +18,13 @@ class DataExtractor:
             output["results"]: standard unit rates data in
                                 a format of list of dictionaries
         """
-        response = requests.get(url)
+        response = requests.get(rates_url)
         output = response.json()
         return output["results"]
 
     def get_consumption_values(
         self,
-        url: str,
+        consumption_url: str,
         api_key: str,
     ) -> List[dict[str, Any]]:
         """Extract consumption values from the API call.
@@ -36,19 +37,35 @@ class DataExtractor:
             output["results"]: standard unit rates data in
                                 a format of list of dictionaries
         """
-        response = requests.get(url, auth=(api_key, ""))
+        response = requests.get(consumption_url, auth=(api_key, ""))
         output = response.json()
         return output["results"]
 
 
 if __name__ == "__main__":
-    from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
+    from energy_analyzer.octopus_data.url_generator import UrlGenerator
+    from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
     url_generator = UrlGenerator()
 
     data_extractor = DataExtractor()
-    electricity_daily_rates = data_extractor.get_standard_unit_rates(
-        url=url_generator.get_electricity_rates_url()
+
+    # electricity_daily_rates = data_extractor.get_standard_unit_rates(
+    #     rates_url=url_generator.get_electricity_rates_url()
+    # )
+    # print(electricity_daily_rates)
+
+    # url = (
+    #     f"{config.octopus_api_url}/electricity-meter-points/"
+    #     + "2700008467789/meters/"
+    #     + f"{config.e_serial_no.get_secret_value()}/consumption/"
+    #     + "?group_by=day&page_size=25000"
+    # )
+    response = requests.get(
+        url_generator.get_electricity_export_url(year_from="2022", year_to=2024),
+        auth=(config.octopus_api_key.get_secret_value(), ""),
     )
-    print(electricity_daily_rates)
+    output = response.json()
+
+    print(output["results"])

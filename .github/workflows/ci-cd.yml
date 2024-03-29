@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'refactor/**'
+      - 'develop'
 
 jobs:
   push_to_registry:

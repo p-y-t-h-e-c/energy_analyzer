@@ -1,4 +1,5 @@
 """Data extractor module."""
+
 from datetime import date
 from typing import Any, List
 
@@ -122,7 +123,8 @@ class WeeklyDataHandler(_DataHandler):
 
 
 if __name__ == "__main__":
-    from energy_analyzer.utils.config import ProjectConfig, UrlGenerator
+    from energy_analyzer.octopus_data.url_generator import UrlGenerator
+    from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
     url_generator = UrlGenerator()
@@ -132,8 +134,8 @@ if __name__ == "__main__":
     data_extractor = DataExtractor()
 
     electricity_consumption_weekly_raw = data_extractor.get_consumption_values(
-        url=url_generator.get_electricity_consumption_url(
-            group_by="week", period_from="2024", period_to="2024"
+        consumption_url=url_generator.get_electricity_consumption_url(
+            group_by="week", year_from="2024", year_to=2024
         ),
         api_key=config.octopus_api_key.get_secret_value(),
     )
