@@ -46,7 +46,7 @@ jobs:
           echo "OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}" >> .env
           echo "SOLIS_KEY_ID: ${{ secrets.SOLIS_KEY_ID }}" >> .env
           echo "SOLIS_KEY_SECRET: ${{ secrets.SOLIS_KEY_SECRET }}" >> .env
-          echo "ELECTRICITY_MPAN: ${{ secrets.ELECTRICITY_MPAN }}" >> .env
+          echo "ELECTRICITY_IMPORT_MPAN: ${{ secrets.ELECTRICITY_IMPORT_MPAN }}" >> .env
           echo "ELECTRICITY_SERIAL_NO: ${{ secrets.ELECTRICITY_SERIAL_NO }}" >> .env
           echo "GAS_MPRN: ${{ secrets.GAS_MPRN }}" >> .env
           echo "GAS_SERIAL_NO: ${{ secrets.GAS_SERIAL_NO }}" >> .env
