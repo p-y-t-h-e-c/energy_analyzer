@@ -17,13 +17,20 @@ from energy_analyzer.octopus_data.data_handler import (
     DailyDataHandler,
     WeeklyDataHandler,
 )
+from energy_analyzer.octopus_data.tariffs_data_models import (
+    OctopusElectricityImport2024,
+    OctopusGasImport2024,
+    get_product_code,
+)
 from energy_analyzer.octopus_data.url_generator import UrlGenerator
 from energy_analyzer.utils.config import ProjectConfig
 
 CONFIG = ProjectConfig()
-URL_GENERATOR = UrlGenerator()
+URL_GENERATOR = UrlGenerator(CONFIG)
 DB_CONNECTOR = DbConnector(CONFIG.db_url.get_secret_value())
 LOGGER = get_dagster_logger()
+ELECTRICITY_TARIFF_INFO = OctopusElectricityImport2024()
+GAS_TARIFF_INFO = OctopusGasImport2024()
 
 
 @asset(name="Get_Octopus_Electricity_Rates_Data")
@@ -33,7 +40,11 @@ def get_electricity_rates_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     electricity_raw = data_extractor.get_standard_unit_rates(
-        rates_url=URL_GENERATOR.get_electricity_rates_url()
+        rates_url=URL_GENERATOR.get_electricity_rates_url(
+            ELECTRICITY_TARIFF_INFO.tariff_code,
+            ELECTRICITY_TARIFF_INFO.valid_from,
+            ELECTRICITY_TARIFF_INFO.valid_to,
+        )
     )
 
     daily_data_handler = DailyDataHandler()
@@ -74,7 +85,11 @@ def get_gas_rates_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     gas_raw = data_extractor.get_standard_unit_rates(
-        rates_url=URL_GENERATOR.get_gas_rates_url()
+        rates_url=URL_GENERATOR.get_gas_rates_url(
+            GAS_TARIFF_INFO.tariff_code,
+            GAS_TARIFF_INFO.valid_from,
+            GAS_TARIFF_INFO.valid_to,
+        )
     )
 
     daily_data_handler = DailyDataHandler()
@@ -114,7 +129,10 @@ def get_electricity_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     electricity_consumption_raw = data_extractor.get_consumption_values(
-        consumption_url=URL_GENERATOR.get_electricity_consumption_url(year_from="2022"),
+        consumption_url=URL_GENERATOR.get_electricity_consumption_url(
+            ELECTRICITY_TARIFF_INFO.valid_from,
+            ELECTRICITY_TARIFF_INFO.valid_to,
+        ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
 
@@ -160,7 +178,9 @@ def get_gas_consumption_data() -> pd.DataFrame:
     data_extractor = DataExtractor()
 
     gas_consumption_raw = data_extractor.get_consumption_values(
-        consumption_url=URL_GENERATOR.get_gas_consumption_url(year_from="2022"),
+        consumption_url=URL_GENERATOR.get_gas_consumption_url(
+            GAS_TARIFF_INFO.valid_from, GAS_TARIFF_INFO.valid_to
+        ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
 
@@ -205,7 +225,7 @@ def get_electricity_weekly_consumption_data() -> pd.DataFrame:
 
     electricity_consumption_weekly_raw = data_extractor.get_consumption_values(
         consumption_url=URL_GENERATOR.get_electricity_consumption_url(
-            group_by="week", year_from="2024", year_to=2024
+            group_by="week", period_from="2024", period_to="2024"
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
@@ -249,7 +269,7 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
 
     gas_consumption_weekly_raw = data_extractor.get_consumption_values(
         consumption_url=URL_GENERATOR.get_gas_consumption_url(
-            group_by="week", year_from="2024", year_to=2024
+            group_by="week", period_from="2024", period_to="2024"
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
