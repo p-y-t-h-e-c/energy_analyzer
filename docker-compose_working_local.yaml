@@ -1,7 +1,5 @@
 # run with docker-compose -f docker-compose_working_local.yaml up
 
-version: "3.7"
-
 services:
   # This service runs the postgres DB used by dagster for run storage, schedule storage,
   # and event log storage.
