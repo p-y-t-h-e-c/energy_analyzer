@@ -1,4 +1,4 @@
-FROM python:python:3.13.0b1-slim-bullseye
+FROM python:3.13.0b1-slim-bullseye
 
 # Checkout and install dagster libraries needed to run the gRPC server
 # and also both dagster-webserver and the dagster-daemon.
