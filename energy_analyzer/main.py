@@ -7,23 +7,22 @@ from energy_analyzer.database.db_connector import DbConnector
 from energy_analyzer.database.db_models import (
     ElectricityConsumptionTable,
     ElectricityRatesTable,
-    ElectricityWeeklyConsumptionTable2024,
     GasConsumptionTable,
     GasRatesTable,
-    GasWeeklyConsumptionTable2024,
 )
 from energy_analyzer.octopus_data.data_extract import DataExtractor
 from energy_analyzer.octopus_data.data_handler import (
     DailyDataHandler,
     WeeklyDataHandler,
 )
-from energy_analyzer.octopus_data.tariffs_data_models import (
+from energy_analyzer.octopus_data.url_generator import UrlGenerator
+from energy_analyzer.utils.config import (
+    ElectricityWeeklyConsumption2024,
+    GasWeeklyConsumption2024,
     OctopusElectricityImport2024,
     OctopusGasImport2024,
-    get_product_code,
+    ProjectConfig,
 )
-from energy_analyzer.octopus_data.url_generator import UrlGenerator
-from energy_analyzer.utils.config import ProjectConfig
 
 CONFIG = ProjectConfig()
 URL_GENERATOR = UrlGenerator(CONFIG)
@@ -31,6 +30,8 @@ DB_CONNECTOR = DbConnector(CONFIG.db_url.get_secret_value())
 LOGGER = get_dagster_logger()
 ELECTRICITY_TARIFF_INFO = OctopusElectricityImport2024()
 GAS_TARIFF_INFO = OctopusGasImport2024()
+WEEKLY_ELECTRICITY_CONSUMPTION = ElectricityWeeklyConsumption2024()
+WEEKLY_GAS_CONSUMPTION = GasWeeklyConsumption2024()
 
 
 @asset(name="Get_Octopus_Electricity_Rates_Data")
@@ -225,7 +226,9 @@ def get_electricity_weekly_consumption_data() -> pd.DataFrame:
 
     electricity_consumption_weekly_raw = data_extractor.get_consumption_values(
         consumption_url=URL_GENERATOR.get_electricity_consumption_url(
-            group_by="week", period_from="2024", period_to="2024"
+            group_by="week",
+            period_from=WEEKLY_ELECTRICITY_CONSUMPTION.period_from,
+            period_to=WEEKLY_ELECTRICITY_CONSUMPTION.period_to,
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
@@ -254,7 +257,7 @@ def add_electricity_weekly_consumption_data_to_db(
     """
     DB_CONNECTOR.add_data_to_db(
         Get_Octopus_Electricity_Weekly_Consumption_Data,
-        table_name=ElectricityWeeklyConsumptionTable2024.__tablename__,
+        table_name=WEEKLY_ELECTRICITY_CONSUMPTION.table.__tablename__,
         if_exists="replace",
     )
 
@@ -269,7 +272,9 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
 
     gas_consumption_weekly_raw = data_extractor.get_consumption_values(
         consumption_url=URL_GENERATOR.get_gas_consumption_url(
-            group_by="week", period_from="2024", period_to="2024"
+            group_by="week",
+            period_from=WEEKLY_GAS_CONSUMPTION.period_from,
+            period_to=WEEKLY_GAS_CONSUMPTION.period_to,
         ),
         api_key=CONFIG.octopus_api_key.get_secret_value(),
     )
@@ -279,7 +284,9 @@ def get_gas_weekly_consumption_data() -> pd.DataFrame:
         gas_consumption_weekly_raw
     )
     gas_consumption_weekly_formatted = (
-        weekly_data_handler.format_weekly_consumption_data(gas_consumption_weekly_df)
+        weekly_data_handler.format_weekly_consumption_data(
+            gas_consumption_weekly_df, CONFIG.gas_m3_to_kwh_conversion
+        )
     )
 
     return gas_consumption_weekly_formatted
@@ -296,6 +303,6 @@ def add_gas_weekly_consumption_data_to_db(
     """
     DB_CONNECTOR.add_data_to_db(
         Get_Octopus_Gas_Weekly_Consumption_Data,
-        table_name=GasWeeklyConsumptionTable2024.__tablename__,
+        table_name=WEEKLY_GAS_CONSUMPTION.table.__tablename__,
         if_exists="replace",
     )

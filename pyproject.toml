@@ -5,26 +5,25 @@ build-backend = "setuptools.build_meta"
 [tool.dagster]
 module_name = "energy_analyzer"
 
-
-
 [tool.ruff]
-
 # Same as Black.
 line-length = 88
 indent-width = 4
 
 [tool.ruff.lint]
-
-# Enable all `pydocstyle` "D" rules, limiting to those that adhere to the
+# Enable all `pycodestyle` (`E` & `W`) rules
+# Enable all `Pyflakes` (`F`) rules
+# Enable all `pydocstyle` (`D`) rules, limiting to those that adhere to the
 # Google convention via `convention = "google"`, below.
-# Enables isort "I" rules
-select = ["D", "I"]
+# Enables all `isort` (`I`) rules
+select = ["E", "W", "F", "D", "I"]
 # On top of the Google convention, disable `D417`, which requires
 # documentation for every function parameter.
 ignore = ["D417"]
+
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
-unfixable = []
+unfixable = ["F401"] # Disable fix for unused imports (`F401`).
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

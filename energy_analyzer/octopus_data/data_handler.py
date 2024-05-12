@@ -1,6 +1,6 @@
 """Data extractor module."""
 
-from datetime import date
+from datetime import date, datetime, timedelta
 from typing import Any, List
 
 import pandas as pd
@@ -26,7 +26,7 @@ class _DataHandler:
 
     @classmethod
     def select_data_to_add_to_db(
-        cls, data: pd.DataFrame, update_point: date | str
+        cls, data: pd.DataFrame, update_point: date | None
     ) -> pd.DataFrame:
         """Select data to be uploaded based on the latest uploaded data.
 
@@ -37,9 +37,11 @@ class _DataHandler:
         Returns:
             new_data: only new data to be added to db
         """
-        # print(data.iloc[:, 0])
-        new_data = data[(data.iloc[:, 0] > update_point)]
-        return new_data
+        if update_point:
+            new_data = data[(data.iloc[:, 0] > update_point)]
+            return new_data
+        else:
+            return data
 
 
 class DailyDataHandler(_DataHandler):
@@ -63,7 +65,9 @@ class DailyDataHandler(_DataHandler):
             inplace=True,
         )
         standard_unit_rates_data["date"] = standard_unit_rates_data["date"].apply(
-            lambda x: parse(parser.isoparse(x).strftime("%Y-%m-%d"))
+            lambda x: parse(
+                (parser.isoparse(x) + timedelta(hours=2)).strftime("%Y-%m-%d")
+            )
         )
         standard_unit_rates_data.sort_values(by=["date"], inplace=True)
 
@@ -94,7 +98,7 @@ class DailyDataHandler(_DataHandler):
             gas_m3_to_kwh_conversion
         )
         consumption_data.sort_values(by=["date"], inplace=True)
-
+        consumption_data = consumption_data.iloc[:-1]
         return consumption_data
 
 
@@ -107,48 +111,93 @@ class WeeklyDataHandler(_DataHandler):
         """Format weekly consumption data."""
         weekly_consumption_data = data.loc[:, ["interval_start", "consumption"]]
         weekly_consumption_data.rename(
-            columns={"interval_start": "week"},
+            columns={"interval_start": "date"},
             inplace=True,
         )
-        weekly_consumption_data["week"] = weekly_consumption_data["week"].apply(
-            lambda x: parser.isoparse(x).strftime("%V")
+        weekly_consumption_data["date"] = weekly_consumption_data["date"].apply(
+            lambda x: parse(parser.isoparse(x).strftime("%Y-%m-%d"))
         )
+        weekly_data = weekly_consumption_data["date"].apply(lambda x: x.strftime("%V"))
+        weekly_consumption_data.insert(loc=0, column="week", value=weekly_data)
+        # weekly_consumption_data["week"] = weekly_consumption_data["date"].apply(
+        #     lambda x: x.strftime("%V")
+        # )
 
         weekly_consumption_data["consumption"] = weekly_consumption_data[
             "consumption"
         ].multiply(gas_m3_to_kwh_conversion)
         weekly_consumption_data.sort_values(by=["week"], inplace=True)
-
-        return weekly_consumption_data
+        last_week_date = weekly_consumption_data["date"].iloc[-1]
+        if last_week_date < (datetime.now() - timedelta(weeks=1)):
+            return weekly_consumption_data
+        else:
+            weekly_consumption_data = weekly_consumption_data.iloc[:-2]
+            return weekly_consumption_data
 
 
 if __name__ == "__main__":
     from energy_analyzer.octopus_data.url_generator import UrlGenerator
-    from energy_analyzer.utils.config import ProjectConfig
+    from energy_analyzer.utils.config import (
+        OctopusElectricityImport2023,
+        OctopusGasImport2024,
+        ProjectConfig,
+    )
 
     config = ProjectConfig()
-    url_generator = UrlGenerator()
+    url_generator = UrlGenerator(config)
 
     from data_extract import DataExtractor
 
     data_extractor = DataExtractor()
-
-    electricity_consumption_weekly_raw = data_extractor.get_consumption_values(
-        consumption_url=url_generator.get_electricity_consumption_url(
-            group_by="week", year_from="2024", year_to=2024
-        ),
-        api_key=config.octopus_api_key.get_secret_value(),
-    )
-
-    # print(electricity_consumption_weekly_raw)
-
+    electricity_tariff = OctopusElectricityImport2023()
+    gas_tariff = OctopusGasImport2024()
+    data_handler = DailyDataHandler()
     weekly_data_handler = WeeklyDataHandler()
-    electricity_consumption_weekly_df = weekly_data_handler.parse_data_to_df(
-        electricity_consumption_weekly_raw
+
+    # electricity_unit_rates = data_extractor.get_standard_unit_rates(
+    #     rates_url=url_generator.get_electricity_rates_url(
+    #         electricity_tariff.tariff_code,
+    #         electricity_tariff.valid_from,
+    #         electricity_tariff.valid_to,
+    #     )
+    # )
+    # electricity_unit_rates_df = data_handler.parse_data_to_df(electricity_unit_rates)
+    # electricity_unit_rates_formatted = data_handler.format_standard_unit_rates_data(
+    #     electricity_unit_rates_df
+    # )
+
+    # print(electricity_unit_rates_formatted)
+
+    # electricity_consumption_url = url_generator.get_electricity_consumption_url(
+    #     period_from=electricity_tariff.valid_from,
+    #     period_to=electricity_tariff.valid_to,
+    # )
+    # electricity_daily_consumption = data_extractor.get_consumption_values(
+    #     electricity_consumption_url, config.octopus_api_key.get_secret_value()
+    # )
+    # electricity_daily_consumption_df = data_handler.parse_data_to_df(
+    #     electricity_daily_consumption
+    # )
+    # electricity_daily_consumption_formatted = data_handler.format_consumption_data(
+    #     electricity_daily_consumption_df
+    # )
+    # print(electricity_daily_consumption_formatted)
+    # period_to = (datetime.now() + timedelta(hours=0)).strftime("%Y-%m-%d")
+    # print(period_to)
+
+    gas_weekly_consumption_url = url_generator.get_gas_consumption_url(
+        period_from="2023",
+        period_to="2023",
+        group_by="week",
     )
-    electricity_consumption_weekly_formatted = (
+    gas_weekly_consumption = data_extractor.get_consumption_values(
+        gas_weekly_consumption_url, config.octopus_api_key.get_secret_value()
+    )
+    gas_weekly_consumption_df = data_handler.parse_data_to_df(gas_weekly_consumption)
+
+    gas_weekly_consumption_formatted = (
         weekly_data_handler.format_weekly_consumption_data(
-            electricity_consumption_weekly_df
+            gas_weekly_consumption_df, config.gas_m3_to_kwh_conversion
         )
     )
-    print(electricity_consumption_weekly_formatted)
+    print(gas_weekly_consumption_formatted)

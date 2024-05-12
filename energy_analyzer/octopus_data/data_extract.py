@@ -43,38 +43,32 @@ class DataExtractor:
 
 
 if __name__ == "__main__":
-    from energy_analyzer.octopus_data.tariffs_data_models import (
-        OctopusElectricityImport2024,
-        OctopusGasImport2024,
-        get_product_code,
-    )
     from energy_analyzer.octopus_data.url_generator import UrlGenerator
-    from energy_analyzer.utils.config import ProjectConfig
+    from energy_analyzer.utils.config import (
+        OctopusElectricityImport2024,
+        ProjectConfig,
+    )
 
     config = ProjectConfig()
     url_generator = UrlGenerator(config)
     tariff_info = OctopusElectricityImport2024()
 
     data_extractor = DataExtractor()
-    rates_url = url_generator.get_electricity_rates_url(
+    electricity_rates_url = url_generator.get_electricity_rates_url(
         tariff_code=tariff_info.tariff_code,
         period_from=tariff_info.valid_from,
         period_to=tariff_info.valid_to,
     )
-    print(rates_url)
-    electricity_daily_rates = data_extractor.get_standard_unit_rates(rates_url)
-    print(electricity_daily_rates)
+    electricity_daily_rates = data_extractor.get_standard_unit_rates(
+        electricity_rates_url
+    )
+    # print(electricity_daily_rates)
 
-    # url = (
-    #     f"{config.octopus_api_url}/electricity-meter-points/"
-    #     + "2700008467789/meters/"
-    #     + f"{config.e_serial_no.get_secret_value()}/consumption/"
-    #     + "?group_by=day&page_size=25000"
-    # )
-    # response = requests.get(
-    #     url_generator.get_electricity_export_url(year_from="2022", year_to=2024),
-    #     auth=(config.octopus_api_key.get_secret_value(), ""),
-    # )
-    # output = response.json()
-
-    # print(output["results"])
+    electricity_consumption_url = url_generator.get_electricity_consumption_url(
+        period_from=tariff_info.valid_from,
+        period_to=tariff_info.valid_to,
+    )
+    electricity_daily_consumption = data_extractor.get_consumption_values(
+        electricity_consumption_url, config.octopus_api_key.get_secret_value()
+    )
+    print(electricity_daily_consumption)
