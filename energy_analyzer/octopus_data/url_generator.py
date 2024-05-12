@@ -4,8 +4,7 @@ import datetime
 import re
 from typing import Optional
 
-from energy_analyzer.octopus_data.tariffs_data_models import get_product_code
-from energy_analyzer.utils.config import ProjectConfig
+from energy_analyzer.utils.config import ProjectConfig, get_product_code
 
 
 class UrlGenerator:

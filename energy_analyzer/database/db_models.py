@@ -21,7 +21,6 @@ class ElectricityRatesTable(Base):
     __tablename__ = "electricity_rates"
 
     date: Mapped[Date] = mapped_column(Date, primary_key=True)
-    unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
     unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
 
@@ -31,7 +30,6 @@ class GasRatesTable(Base):
     __tablename__ = "gas_rates"
 
     date: Mapped[Date] = mapped_column(Date, primary_key=True)
-    unit_rate_exc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
     unit_rate_inc_vat: Mapped[Float] = mapped_column(Float, nullable=False)
 
 

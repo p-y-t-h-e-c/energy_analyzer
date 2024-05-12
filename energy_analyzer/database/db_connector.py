@@ -5,10 +5,12 @@ from datetime import date
 from typing import Literal
 
 import pandas as pd
+from dateutil.parser import parse
 from sqlalchemy import create_engine, desc, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from energy_analyzer.database.db_models import OctopusTables
+from energy_analyzer.database.db_models import Base, OctopusTables
 
 
 class DbConnector:
@@ -42,7 +44,9 @@ class DbConnector:
         else:
             logging.info("No new data to be added to db.")
 
-    def get_latest_row(self, table: OctopusTables, column_name: str = "date") -> date:
+    def get_latest_row(
+        self, table: OctopusTables, column_name: str = "date"
+    ) -> date | None:
         """Get latest row from a specific column.
 
         Args:
@@ -55,41 +59,29 @@ class DbConnector:
         with self.session as session:
             table_column = table.db_table().columns.__getattr__(column_name)
             stmt = select(table_column).order_by(desc(table_column)).limit(1)
-            result = session.execute(stmt)
-            session.commit()
-            return result.scalar_one()
+            try:
+                result = session.execute(stmt)
+                session.commit()
+                output: date = result.scalar_one()
+                return parse(output.strftime("%Y-%m-%d"))
+            except NoResultFound:
+                return None
 
-    def reset_database(self) -> None:
+    def reset_database(self, table: OctopusTables) -> None:
         """Reset Database."""
-        Base.metadata.drop_all(self.engine)
-        Base.metadata.create_all(self.engine)
+        Base.metadata.drop_all(bind=db_connector.engine, tables=[table.db_table()])
+        Base.metadata.create_all(bind=db_connector.engine, tables=[table.db_table()])
 
 
 if __name__ == "__main__":
     from energy_analyzer.database.db_models import (
-        Base,
-        ElectricityRatesTable,
-        ElectricityWeeklyConsumptionTable2024,
+        GasWeeklyConsumptionTable2023,
     )
     from energy_analyzer.utils.config import ProjectConfig
 
     config = ProjectConfig()
 
-    data = {
-        "date": "2023-11-21",
-        "unit_rate_exc_vat": 1800,
-        "unit_rate_inc_vat": 19.341,
-    }
     db_url = config.db_url
     db_connector = DbConnector(db_url.get_secret_value())
 
-    # print(db_connector.get_latest_date(ElectricityWeeklyConsumptionTable2022))
-
-    # db_connector.reset_database()
-
-    print(db_connector.get_latest_row(ElectricityRatesTable))
-    # print(
-    #     db_connector.get_latest_row(
-    #         ElectricityWeeklyConsumptionTable2024, column_name="week"
-    #     )
-    # )
+    db_connector.reset_database(table=GasWeeklyConsumptionTable2023)
