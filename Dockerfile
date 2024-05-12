@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:python:3.13.0b1-slim-bullseye
 
 # Checkout and install dagster libraries needed to run the gRPC server
 # and also both dagster-webserver and the dagster-daemon.
@@ -6,11 +6,12 @@ FROM python:3.10-slim
 
 RUN pip install --upgrade pip
 RUN pip install \
-    dagster \
-    dagster-graphql \
-    dagster-webserver \
-    dagster-postgres \
-    dagster-docker
+    dagster==1.7.0 \
+    dagster-graphql==1.7.0 \
+    dagster-webserver==1.7.0 \
+    dagster-postgres==0.23.0 \
+    dagster-docker \
+    grpcio==1.57
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
 ENV DAGSTER_HOME=/opt/dagster/app
