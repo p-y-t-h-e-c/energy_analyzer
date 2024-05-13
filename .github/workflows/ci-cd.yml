@@ -63,7 +63,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "Dockerfile_Dagster,docker-compose.yaml,.env"
+          source: "Dockerfile_Dagster,dagster.yaml,workspace.yaml,docker-compose.yaml,.env"
           target: "~/.deploy/${{ github.event.repository.name }}/"
 
       - name: remote docker-compose up via ssh
