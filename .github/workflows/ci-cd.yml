@@ -29,6 +29,7 @@ jobs:
         with:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/energy_analyzer:latest
+          file: Dockerfile_Energy_Analyzer
 
   deploy_via_ssh:
     needs: push_to_registry
@@ -62,7 +63,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "docker-compose.yaml,.env"
+          source: "Dockerfile_Dagster,docker-compose.yaml,.env"
           target: "~/.deploy/${{ github.event.repository.name }}/"
 
       - name: remote docker-compose up via ssh
@@ -81,4 +82,5 @@ jobs:
             cd ~/.deploy/${{ github.event.repository.name }}
             docker rm -vf $(docker ps -aq)
             docker rmi -f $(docker images -aq)
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker compose up -d
