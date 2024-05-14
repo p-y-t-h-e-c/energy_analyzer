@@ -5,7 +5,7 @@ FROM python:3.10.12-alpine
 
 RUN pip install --upgrade pip
 RUN pip install \
-    dagster==1.7.0  \
+    dagster==1.5.10  \
     dagster-postgres==0.23.0 \
     dagster-docker==0.23.5 \
     grpcio==1.57.0
