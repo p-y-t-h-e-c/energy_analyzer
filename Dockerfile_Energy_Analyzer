@@ -1,4 +1,4 @@
-FROM python:3.12.3-slim
+FROM python:3.10.12-alpine
 
 # Checkout and install dagster libraries needed to run the gRPC server
 # exposing your repository to dagster-webserver and dagster-daemon, and to load the DagsterInstance
@@ -7,7 +7,8 @@ RUN pip install --upgrade pip
 RUN pip install \
     dagster \
     dagster-postgres \
-    dagster-docker
+    dagster-docker \
+    grpcio==1.57.0
 
 # Add repository code
 WORKDIR /opt/dagster/app

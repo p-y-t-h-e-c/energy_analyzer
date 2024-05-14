@@ -4,7 +4,7 @@ services:
   # This service runs the postgres DB used by dagster for run storage, schedule storage,
   # and event log storage.
   docker_postgresql_db:
-    image: postgres:11
+    image: postgres:12
     container_name: docker_postgresql_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -22,7 +22,7 @@ services:
   energy_analyzer_docker_code_base:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile_Energy_Analyzer
     container_name: energy_analyzer_docker_code_base
     image: energy_analyzer_docker_code_base_image
     restart: always
@@ -51,7 +51,7 @@ services:
   energy_analyzer_docker_webserver:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile_Dagster
     entrypoint:
       - dagster-webserver
       - -h
@@ -94,7 +94,7 @@ services:
   energy_analyzer_docker_daemon:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile_Dagster
     entrypoint:
       - dagster-daemon
       - run
