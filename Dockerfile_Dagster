@@ -5,11 +5,11 @@ FROM python:3.10.12-alpine
 
 RUN pip install --upgrade pip
 RUN pip install \
-    dagster==1.5.14 \
-    dagster-graphql==1.5.14 \
-    dagster-webserver==1.5.14 \
-    dagster-postgres \
-    dagster-docker \
+    dagster==1.7.0 \
+    dagster-graphql==1.7.0 \
+    dagster-webserver==1.7.0 \
+    dagster-postgres==0.23.0 \
+    dagster-docker==0.23.5 \
     grpcio==1.57.0
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
