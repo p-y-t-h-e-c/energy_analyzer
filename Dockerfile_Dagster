@@ -1,7 +1,7 @@
 # Dagster libraries to run both dagster-webserver and the dagster-daemon. Does not
 # need to have access to any pipeline code.
 
-FROM python:3.10.12-alpine
+FROM --platform=$BUILDPLATFORM python:3.10.12-alpine
 
 RUN pip install \
     dagster==1.5.10 \

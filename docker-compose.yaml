@@ -2,7 +2,6 @@ services:
   # This service runs the postgres DB used by dagster for run storage, schedule storage,
   # and event log storage.
   docker_postgresql_db:
-    platform: linux/amd64
     image: postgres:12
     container_name: docker_postgresql_db
     environment:
@@ -19,7 +18,6 @@ services:
   # its own port, and have its own entry in the workspace.yaml file that's loaded by the
       # webserver.
   energy_analyzer_docker_code_base:
-    platform: linux/amd64
     image: pythec/energy_analyzer:latest
     container_name: energy_analyzer_docker_code_base
     restart: always
@@ -46,7 +44,6 @@ services:
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
   # a queue and later dequeued and launched by dagster-daemon.
   energy_analyzer_docker_webserver:
-    platform: linux/amd64
     image: pythec/dagster:latest
     entrypoint:
       - dagster-webserver
@@ -88,7 +85,6 @@ services:
   # This service runs the dagster-daemon process, which is responsible for taking runs
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
   energy_analyzer_docker_daemon:
-    platform: linux/amd64
     image: pythec/dagster:latest
     entrypoint:
       - dagster-daemon
