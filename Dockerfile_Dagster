@@ -5,9 +5,9 @@ FROM python:3.10.12-alpine
 
 RUN pip install --upgrade pip
 RUN pip install \
-    dagster==1.7.5 \
-    dagster-graphql==1.7.5 \
-    dagster-webserver==1.7.5 \
+    dagster==1.5.14 \
+    dagster-graphql==1.5.14 \
+    dagster-webserver==1.5.14 \
     dagster-postgres \
     dagster-docker \
     grpcio==1.57.0
