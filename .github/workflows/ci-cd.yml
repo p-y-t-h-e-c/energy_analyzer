@@ -83,4 +83,5 @@ jobs:
             docker rm -vf $(docker ps -aq)
             docker rmi -f $(docker images -aq)
             docker run --privileged --rm tonistiigi/binfmt --install all
+            docker build . -t dagster -f Dockerfile_Dagster
             docker compose up -d

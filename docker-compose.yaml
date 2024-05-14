@@ -47,9 +47,7 @@ services:
   # a queue and later dequeued and launched by dagster-daemon.
   energy_analyzer_docker_webserver:
     platform: linux/amd64
-    build:
-      context: .
-      dockerfile: ./Dockerfile_Dagster
+    image: dagster
     entrypoint:
       - dagster-webserver
       - -h
@@ -91,9 +89,7 @@ services:
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
   energy_analyzer_docker_daemon:
     platform: linux/amd64
-    build:
-      context: .
-      dockerfile: ./Dockerfile_Dagster
+    image: dagster
     entrypoint:
       - dagster-daemon
       - run
