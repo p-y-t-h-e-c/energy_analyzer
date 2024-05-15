@@ -27,14 +27,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          platforms: linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/energy_analyzer:latest
           file: Dockerfile_Energy_Analyzer
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           push: true
-          platforms: linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/dagster:latest
           file: Dockerfile_Dagster
 
@@ -89,4 +87,5 @@ jobs:
             cd ~/.deploy/${{ github.event.repository.name }}
             docker rm -vf $(docker ps -aq)
             docker rmi -f $(docker images -aq)
+            docker run --privileged --rm tonistiigi/binfmt --install all
             docker compose up -d
