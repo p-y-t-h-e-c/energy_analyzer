@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.10.12-alpine AS build
+FROM --platform=$BUILDPLATFORM arm64v8/python:3.10.14-alpine
 
 # Checkout and install dagster libraries needed to run the gRPC server
 # exposing your repository to dagster-webserver and dagster-daemon, and to load the DagsterInstance
