@@ -51,7 +51,7 @@ services:
     entrypoint:
       - dagster-webserver
       - -h
-      - "130.162.191.234"
+      - "0.0.0.0"
       - -p
       - "3000"
       - -w
