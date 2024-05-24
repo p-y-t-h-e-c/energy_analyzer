@@ -71,7 +71,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes: # Make docker client accessible so we can terminate containers from the webserver
       - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/io_manager_storage:/tmp/io_manager_storage
+      # - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
       - energy_analyzer_docker_network
     depends_on:
@@ -106,7 +106,7 @@ services:
       PUSHSTAQ_API_KEY: ${PUSHSTAQ_API_KEY}
     volumes: # Make docker client accessible so we can launch containers using host docker
       - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/io_manager_storage:/tmp/io_manager_storage
+      # - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
       - energy_analyzer_docker_network
     depends_on:
