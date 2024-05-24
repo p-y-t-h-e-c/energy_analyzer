@@ -7,7 +7,8 @@ RUN pip install --upgrade pip
 RUN pip install \
     dagster \
     dagster-postgres \
-    dagster-docker
+    dagster-docker \
+    grpcio
 
 # Add repository code
 WORKDIR /opt/dagster/app

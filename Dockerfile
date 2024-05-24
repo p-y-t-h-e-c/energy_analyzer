@@ -6,11 +6,12 @@ FROM python:3.12.3-bookworm
 
 RUN pip install --upgrade pip
 RUN pip install \
-    dagster==1.7.5 \
-    dagster-graphql==1.7.5 \
-    dagster-webserver==1.7.5 \
+    dagster \
+    dagster-graphql \
+    dagster-webserver \
     dagster-postgres \
-    dagster-docker
+    dagster-docker \
+    grpcio
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
 ENV DAGSTER_HOME=/opt/dagster/app
