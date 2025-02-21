@@ -62,7 +62,7 @@ if __name__ == "__main__":
     electricity_daily_rates = data_extractor.get_standard_unit_rates(
         electricity_rates_url
     )
-    # print(electricity_daily_rates)
+    print(electricity_daily_rates)
 
     electricity_consumption_url = url_generator.get_electricity_consumption_url(
         period_from=tariff_info.valid_from,

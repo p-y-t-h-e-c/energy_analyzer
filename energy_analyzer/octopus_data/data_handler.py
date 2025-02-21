@@ -154,19 +154,19 @@ if __name__ == "__main__":
     data_handler = DailyDataHandler()
     weekly_data_handler = WeeklyDataHandler()
 
-    # electricity_unit_rates = data_extractor.get_standard_unit_rates(
-    #     rates_url=url_generator.get_electricity_rates_url(
-    #         electricity_tariff.tariff_code,
-    #         electricity_tariff.valid_from,
-    #         electricity_tariff.valid_to,
-    #     )
-    # )
-    # electricity_unit_rates_df = data_handler.parse_data_to_df(electricity_unit_rates)
-    # electricity_unit_rates_formatted = data_handler.format_standard_unit_rates_data(
-    #     electricity_unit_rates_df
-    # )
+    electricity_unit_rates = data_extractor.get_standard_unit_rates(
+        rates_url=url_generator.get_electricity_rates_url(
+            electricity_tariff.tariff_code,
+            electricity_tariff.valid_from,
+            electricity_tariff.valid_to,
+        )
+    )
+    electricity_unit_rates_df = data_handler.parse_data_to_df(electricity_unit_rates)
+    electricity_unit_rates_formatted = data_handler.format_standard_unit_rates_data(
+        electricity_unit_rates_df
+    )
 
-    # print(electricity_unit_rates_formatted)
+    print(electricity_unit_rates_formatted)
 
     # electricity_consumption_url = url_generator.get_electricity_consumption_url(
     #     period_from=electricity_tariff.valid_from,
@@ -185,19 +185,19 @@ if __name__ == "__main__":
     # period_to = (datetime.now() + timedelta(hours=0)).strftime("%Y-%m-%d")
     # print(period_to)
 
-    gas_weekly_consumption_url = url_generator.get_gas_consumption_url(
-        period_from="2023",
-        period_to="2023",
-        group_by="week",
-    )
-    gas_weekly_consumption = data_extractor.get_consumption_values(
-        gas_weekly_consumption_url, config.octopus_api_key.get_secret_value()
-    )
-    gas_weekly_consumption_df = data_handler.parse_data_to_df(gas_weekly_consumption)
+    # gas_weekly_consumption_url = url_generator.get_gas_consumption_url(
+    #     period_from="2023",
+    #     period_to="2023",
+    #     group_by="week",
+    # )
+    # gas_weekly_consumption = data_extractor.get_consumption_values(
+    #     gas_weekly_consumption_url, config.octopus_api_key.get_secret_value()
+    # )
+    # gas_weekly_consumption_df = data_handler.parse_data_to_df(gas_weekly_consumption)
 
-    gas_weekly_consumption_formatted = (
-        weekly_data_handler.format_weekly_consumption_data(
-            gas_weekly_consumption_df, config.gas_m3_to_kwh_conversion
-        )
-    )
-    print(gas_weekly_consumption_formatted)
+    # gas_weekly_consumption_formatted = (
+    #     weekly_data_handler.format_weekly_consumption_data(
+    #         gas_weekly_consumption_df, config.gas_m3_to_kwh_conversion
+    #     )
+    # )
+    # print(gas_weekly_consumption_formatted)
